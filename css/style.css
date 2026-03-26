@@ -800,6 +800,106 @@ body {
     transform: translateY(0);
 }
 
+/* ===== DÖVİZ KURU WİDGET ===== */
+.currency-widget {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #aaa;
+}
+
+.cw-item { color: #ccc; }
+.cw-divider { color: #555; font-size: 10px; }
+
+/* ===== KATALOG KONTROLLER ===== */
+.catalog-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.catalog-select {
+    padding: 6px 10px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--color-text);
+    background: #fff;
+    min-width: 180px;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 11px;
+}
+
+/* ===== QR KOD + OEKO-TEX (Belge içi) ===== */
+.doc-qr-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 12px;
+    border-top: 1px dashed #ddd;
+}
+
+.doc-qr {
+    width: 80px;
+    height: 80px;
+}
+
+.doc-qr canvas, .doc-qr img {
+    width: 80px !important;
+    height: 80px !important;
+}
+
+.doc-oeko {
+    text-align: right;
+}
+
+.oeko-text {
+    font-size: 10px;
+    font-weight: 800;
+    color: #555;
+    letter-spacing: 1px;
+}
+
+.oeko-sub {
+    font-size: 8px;
+    color: #999;
+    margin-top: 2px;
+}
+
+/* ===== AUTO-SAVE İNDİKATÖR ===== */
+.autosave-indicator {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    font-size: 11px;
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 50;
+}
+
+.autosave-indicator.show { opacity: 1; }
+
+.autosave-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-success);
+}
+
 /* ===== ANİMASYONLAR ===== */
 @keyframes slideIn {
     from { opacity: 0; transform: translateY(-8px); }
@@ -834,6 +934,15 @@ body {
         font-size: 11px;
         text-align: center;
     }
+
+    .currency-widget { display: none; }
+
+    .catalog-controls {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .catalog-select { width: 100%; }
 
     .page-container {
         padding: 12px;
