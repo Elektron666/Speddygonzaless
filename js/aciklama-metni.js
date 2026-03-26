@@ -1,108 +1,96 @@
-// ===== AÇIKLAMA METNİ MODÜLÜ (WhatsApp Paylaşım) =====
+// ===== GÖRSEL KART OLUŞTURUCU v2 =====
 
 (function() {
-    let generatedText = '';
+    var sablonSelect = document.getElementById('am-sablon');
+    var arkaplanSelect = document.getElementById('am-arkaplan');
+    var baslikInput = document.getElementById('am-baslik');
+    var aciklamaInput = document.getElementById('am-aciklama');
+    var card = document.getElementById('am-card');
+    var cardBaslik = document.getElementById('am-card-baslik');
+    var cardAciklama = document.getElementById('am-card-aciklama');
+    var indirBtn = document.getElementById('am-indir');
+    var whatsappBtn = document.getElementById('am-whatsapp');
 
-    const urunInput = document.getElementById('am-urun');
-    const tipInput = document.getElementById('am-tip');
-    const ozellikInput = document.getElementById('am-ozellik');
-    const renkInput = document.getElementById('am-renk');
-    const enInput = document.getElementById('am-en');
-    const fiyatInput = document.getElementById('am-fiyat');
-    const minInput = document.getElementById('am-min');
-    const notInput = document.getElementById('am-not');
-    const olusturBtn = document.getElementById('am-olustur');
-    const textOutput = document.getElementById('am-text-output');
-    const kopyalaBtn = document.getElementById('am-kopyala');
-    const whatsappBtn = document.getElementById('am-whatsapp');
+    // Şablon verileri
+    var sablonlar = {
+        'bos': { baslik: '', aciklama: '' },
+        'yeni-urun': {
+            baslik: 'Yeni Sezon Kumaşlarımız',
+            aciklama: 'En kaliteli kumaşlar uygun fiyatlarla sizlerle.\nDetaylı bilgi için iletişime geçin.'
+        },
+        'bayram': {
+            baslik: 'Bayramınız Mübarek Olsun',
+            aciklama: 'ORMEN TEKSTİL ailesi olarak\ntüm iş ortaklarımızın ve müşterilerimizin\nbayramını en içten dileklerimizle kutlarız.'
+        },
+        'kampanya': {
+            baslik: 'Özel İndirim Fırsatı',
+            aciklama: 'Seçili ürünlerde özel indirim fırsatları.\nStoklar sınırlıdır, acele edin!'
+        }
+    };
 
-    // Metin oluştur
-    olusturBtn.addEventListener('click', function() {
-        const urun = urunInput.value.trim();
-        const tip = tipInput.value.trim();
-        const ozellik = ozellikInput.value.trim();
-        const renk = renkInput.value.trim();
-        const en = enInput.value.trim();
-        const fiyat = fiyatInput.value.trim();
-        const min = minInput.value.trim();
-        const not_ = notInput.value.trim();
+    // Şablon değişince formu doldur
+    sablonSelect.addEventListener('change', function() {
+        var s = sablonlar[this.value];
+        if (s) {
+            baslikInput.value = s.baslik;
+            aciklamaInput.value = s.aciklama;
+            updateCard();
+        }
+    });
 
-        if (!urun) {
-            urunInput.focus();
-            showToast('Lütfen ürün adını girin.');
+    // Arka plan değişince kart sınıfını güncelle
+    arkaplanSelect.addEventListener('change', updateCard);
+    baslikInput.addEventListener('input', updateCard);
+    aciklamaInput.addEventListener('input', updateCard);
+
+    function updateCard() {
+        // Arka plan sınıfı
+        card.className = 'visual-card bg-' + arkaplanSelect.value;
+
+        // Metin
+        cardBaslik.textContent = baslikInput.value || 'Başlık Metni';
+        cardAciklama.textContent = aciklamaInput.value || 'Açıklama metni buraya gelecek';
+    }
+
+    // İlk yükleme
+    updateCard();
+
+    // PNG İndir (html2canvas)
+    indirBtn.addEventListener('click', function() {
+        if (!baslikInput.value.trim()) {
+            showToast('Lütfen bir başlık girin.');
             return;
         }
 
-        let text = '';
-        text += '━━━━━━━━━━━━━━━━━━━━\n';
-        text += '  *ORMEN TEKSTİL*\n';
-        text += '  Yeni Ürün Tanıtımı\n';
-        text += '━━━━━━━━━━━━━━━━━━━━\n\n';
-
-        text += '🏷️ *' + urun.toUpperCase() + '*';
-        if (tip) text += ' - ' + tip;
-        text += '\n\n';
-
-        if (ozellik) {
-            text += '📋 *Özellikler:*\n';
-            text += ozellik + '\n\n';
-        }
-
-        if (renk) {
-            text += '🎨 *Renk Seçenekleri:*\n';
-            text += renk + '\n\n';
-        }
-
-        if (en) {
-            text += '📏 *En:* ' + en + '\n';
-        }
-
-        if (fiyat) {
-            text += '💰 *Fiyat:* ' + fiyat + '\n';
-        }
-
-        if (min) {
-            text += '📦 *Minimum Sipariş:* ' + min + '\n';
-        }
-
-        if (not_) {
-            text += '\n⚡ ' + not_ + '\n';
-        }
-
-        text += '\n━━━━━━━━━━━━━━━━━━━━\n';
-        text += '📞 0312 345 63 83\n';
-        text += '📱 0546 345 63 83 (WhatsApp)\n';
-        text += '🌐 www.ormentekstil.com.tr\n';
-        text += '━━━━━━━━━━━━━━━━━━━━';
-
-        generatedText = text;
-        textOutput.textContent = text;
-        textOutput.classList.remove('placeholder-text');
-        showToast('Metin oluşturuldu!');
+        html2canvas(card, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: null,
+            logging: false
+        }).then(function(canvas) {
+            var link = document.createElement('a');
+            link.download = 'ORMEN_' + baslikInput.value.trim().replace(/\s+/g, '_').substring(0, 30) + '.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast('Görsel indirildi!');
+        });
     });
 
-    // Kopyala
-    kopyalaBtn.addEventListener('click', function() {
-        if (!generatedText) {
-            showToast('Önce metin oluşturun.');
-            return;
-        }
-        copyToClipboard(generatedText);
-        this.classList.add('copied');
-        this.textContent = 'Kopyalandı!';
-        setTimeout(() => {
-            this.classList.remove('copied');
-            this.textContent = 'Metni Kopyala';
-        }, 2000);
-    });
-
-    // WhatsApp paylaş
+    // WhatsApp paylaş (metin olarak)
     whatsappBtn.addEventListener('click', function() {
-        if (!generatedText) {
-            showToast('Önce metin oluşturun.');
-            return;
+        var text = '';
+        text += '*ORMEN TEKSTİL*\n\n';
+        if (baslikInput.value.trim()) {
+            text += '*' + baslikInput.value.trim() + '*\n\n';
         }
-        const encoded = encodeURIComponent(generatedText);
+        if (aciklamaInput.value.trim()) {
+            text += aciklamaInput.value.trim() + '\n\n';
+        }
+        text += '📞 (0312) 345 63 83\n';
+        text += '📱 0546 345 63 83 (WhatsApp)\n';
+        text += '🌐 www.ormentekstil.com.tr';
+
+        var encoded = encodeURIComponent(text);
         window.open('https://wa.me/?text=' + encoded, '_blank');
     });
 })();

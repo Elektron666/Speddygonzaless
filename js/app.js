@@ -1,42 +1,39 @@
-// ===== ORMEN TEKSTİL - Ana Uygulama =====
+// ===== ORMEN TEKSTİL - Ana Uygulama v2 =====
 
-// Sekme Yönetimi
 document.addEventListener('DOMContentLoaded', function() {
+    // === Sekme Yönetimi ===
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
-    tabBtns.forEach(btn => {
+    tabBtns.forEach(function(btn) {
         btn.addEventListener('click', function() {
-            const tabId = this.dataset.tab;
-
-            tabBtns.forEach(b => b.classList.remove('active'));
-            tabContents.forEach(c => c.classList.remove('active'));
-
+            var tabId = this.dataset.tab;
+            tabBtns.forEach(function(b) { b.classList.remove('active'); });
+            tabContents.forEach(function(c) { c.classList.remove('active'); });
             this.classList.add('active');
             document.getElementById(tabId).classList.add('active');
         });
     });
 
-    // Bugünün tarihini ayarla
-    const today = new Date().toISOString().split('T')[0];
-    document.querySelectorAll('input[type="date"]').forEach(input => {
-        input.value = today;
+    // Bugünün tarihini set et
+    var today = new Date().toISOString().split('T')[0];
+    document.querySelectorAll('input[type="date"]').forEach(function(input) {
+        if (!input.value) input.value = today;
     });
 });
 
-// Tarih formatlama (DD/MM/YYYY)
+// === Tarih Formatlama (DD/MM/YYYY) ===
 function formatDate(dateStr) {
     if (!dateStr) return '';
-    const d = new Date(dateStr);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return day + '/' + month + '/' + year;
+    var d = new Date(dateStr);
+    return String(d.getDate()).padStart(2, '0') + '/' +
+           String(d.getMonth() + 1).padStart(2, '0') + '/' +
+           d.getFullYear();
 }
 
-// Toast bildirimi göster
+// === Toast Bildirimi ===
 function showToast(message) {
-    let toast = document.querySelector('.toast');
+    var toast = document.querySelector('.toast');
     if (!toast) {
         toast = document.createElement('div');
         toast.className = 'toast';
@@ -44,42 +41,55 @@ function showToast(message) {
     }
     toast.textContent = message;
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2500);
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(function() {
+        toast.classList.remove('show');
+    }, 2500);
 }
 
-// Clipboard'a kopyala
+// === Clipboard ===
 function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        showToast('Kopyalandı!');
-    }).catch(() => {
-        // Fallback
-        const ta = document.createElement('textarea');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+            showToast('Kopyalandı!');
+        });
+    } else {
+        var ta = document.createElement('textarea');
         ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
         document.body.appendChild(ta);
         ta.select();
         document.execCommand('copy');
         document.body.removeChild(ta);
         showToast('Kopyalandı!');
-    });
+    }
 }
 
-// PDF export
+// === PDF Export ===
 function exportPDF(elementId, filename) {
-    const element = document.getElementById(elementId);
-    // Sil butonlarını gizle
-    const deleteBtns = element.querySelectorAll('.delete-btn');
-    deleteBtns.forEach(btn => btn.style.display = 'none');
+    var element = document.getElementById(elementId);
+    var deleteBtns = element.querySelectorAll('.delete-btn');
+    deleteBtns.forEach(function(btn) { btn.style.display = 'none'; });
 
-    const opt = {
+    var opt = {
         margin: 0,
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(element).save().then(() => {
-        deleteBtns.forEach(btn => btn.style.display = '');
+    html2pdf().set(opt).from(element).save().then(function() {
+        deleteBtns.forEach(function(btn) { btn.style.display = ''; });
         showToast('PDF indirildi!');
     });
+}
+
+// === Çeki No Oluştur ===
+function generateCekiNo() {
+    var sayac = parseInt(localStorage.getItem('ceki_sayac') || '0') + 1;
+    localStorage.setItem('ceki_sayac', sayac.toString());
+    var yil = new Date().getFullYear();
+    return 'CK-' + yil + '-' + String(sayac).padStart(3, '0');
 }
