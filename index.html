@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORMEN TEKSTİL - İş Şablonları</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Sekmeli Navigasyon -->
+    <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="fiyat-listesi">Fiyat Listesi</button>
+        <button class="tab-btn" data-tab="ceki-listesi">Çeki Listesi</button>
+        <button class="tab-btn" data-tab="aciklama-metni">Açıklama Metni</button>
+        <button class="tab-btn" data-tab="siparis-mail">Sipariş Mail</button>
+    </nav>
+
+    <!-- ==================== FİYAT LİSTESİ ==================== -->
+    <section id="fiyat-listesi" class="tab-content active">
+        <div class="form-controls">
+            <h2>Fiyat Listesi Oluştur</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tarih</label>
+                    <input type="date" id="fl-tarih">
+                </div>
+                <div class="form-group">
+                    <label>Ödeme Koşulu</label>
+                    <select id="fl-odeme">
+                        <option value="PEŞİN">PEŞİN</option>
+                        <option value="VADELİ">VADELİ</option>
+                        <option value="30 GÜN">30 GÜN VADELİ</option>
+                        <option value="60 GÜN">60 GÜN VADELİ</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Para Birimi</label>
+                    <select id="fl-para">
+                        <option value="$">USD ($)</option>
+                        <option value="€">EUR (€)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ürün Adı</label>
+                    <input type="text" id="fl-urun" placeholder="Ör: ARIA">
+                </div>
+                <div class="form-group">
+                    <label>Fiyat</label>
+                    <input type="number" id="fl-fiyat" placeholder="Ör: 3.95" step="0.01">
+                </div>
+                <div class="form-group form-group-btn">
+                    <button class="btn btn-add" id="fl-ekle">+ Ürün Ekle</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fiyat Listesi Önizleme -->
+        <div class="preview-area" id="fl-preview">
+            <div class="document" id="fl-document">
+                <!-- Üst Başlık -->
+                <div class="doc-header">
+                    <div class="doc-header-left">
+                        <h1 class="firma-adi">ORMEN<br>TEKSTİL</h1>
+                    </div>
+                    <div class="doc-header-right">
+                        <p>A.Önder Mah. Karpuzlu 1.Cadde No:05/A 06105 Ankara</p>
+                        <p>T (0312) 345 63 83 - 85 | F (0312) 345 63 83</p>
+                        <p>info@ormentekstil.com.tr | www.ormentekstil.com.tr</p>
+                        <p>WhatsApp Sipariş Hattı: 0546 345 63 83 (WhatsApp)</p>
+                    </div>
+                </div>
+
+                <!-- Belge Başlığı -->
+                <div class="doc-title-row">
+                    <h2 class="doc-title">FİYAT LİSTESİ</h2>
+                    <div class="doc-meta">
+                        <p>TARİH: <span id="fl-tarih-display"></span></p>
+                        <p>ÖDEME: <span id="fl-odeme-display">PEŞİN</span></p>
+                    </div>
+                </div>
+
+                <!-- Ürün Tablosu -->
+                <table class="doc-table" id="fl-table">
+                    <thead>
+                        <tr>
+                            <th class="col-no">NO</th>
+                            <th class="col-urun">ÜRÜN ADI</th>
+                            <th class="col-fiyat">FİYAT</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fl-tbody">
+                    </tbody>
+                </table>
+
+                <!-- Alt Bilgi -->
+                <div class="doc-footer">
+                    <p>ORMEN TEKSTİL &middot; www.ormentekstil.com.tr &middot; info@ormentekstil.com.tr &middot; (0312) 345 63 83</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-export" id="fl-pdf">PDF'e Aktar</button>
+            <button class="btn btn-clear" id="fl-temizle">Listeyi Temizle</button>
+        </div>
+    </section>
+
+    <!-- ==================== ÇEKİ LİSTESİ ==================== -->
+    <section id="ceki-listesi" class="tab-content">
+        <div class="form-controls">
+            <h2>Çeki Listesi Oluştur</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tarih</label>
+                    <input type="date" id="cl-tarih">
+                </div>
+                <div class="form-group">
+                    <label>İrsaliye No</label>
+                    <input type="text" id="cl-irsaliye" placeholder="Ör: 2025-001">
+                </div>
+                <div class="form-group">
+                    <label>Araç Plakası</label>
+                    <input type="text" id="cl-plaka" placeholder="Ör: 06 ABC 123">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Alıcı Firma</label>
+                    <input type="text" id="cl-alici" placeholder="Firma adı">
+                </div>
+                <div class="form-group">
+                    <label>Alıcı Adres</label>
+                    <input type="text" id="cl-adres" placeholder="Adres">
+                </div>
+                <div class="form-group">
+                    <label>Alıcı Telefon</label>
+                    <input type="text" id="cl-telefon" placeholder="Telefon">
+                </div>
+            </div>
+            <hr class="form-divider">
+            <h3>Ürün Ekle</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ürün Adı</label>
+                    <input type="text" id="cl-urun" placeholder="Ör: ARIA">
+                </div>
+                <div class="form-group">
+                    <label>Top/Koli No</label>
+                    <input type="number" id="cl-top" placeholder="Ör: 5" step="1">
+                </div>
+                <div class="form-group">
+                    <label>Renk</label>
+                    <input type="text" id="cl-renk" placeholder="Ör: Lacivert">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Metre/Kg</label>
+                    <input type="number" id="cl-metre" placeholder="Ör: 150" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Brüt Ağırlık (kg)</label>
+                    <input type="number" id="cl-brut" placeholder="Ör: 45" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Net Ağırlık (kg)</label>
+                    <input type="number" id="cl-net" placeholder="Ör: 40" step="0.01">
+                </div>
+                <div class="form-group form-group-btn">
+                    <button class="btn btn-add" id="cl-ekle">+ Ürün Ekle</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Çeki Listesi Önizleme -->
+        <div class="preview-area" id="cl-preview">
+            <div class="document" id="cl-document">
+                <div class="doc-header">
+                    <div class="doc-header-left">
+                        <h1 class="firma-adi">ORMEN<br>TEKSTİL</h1>
+                    </div>
+                    <div class="doc-header-right">
+                        <p>A.Önder Mah. Karpuzlu 1.Cadde No:05/A 06105 Ankara</p>
+                        <p>T (0312) 345 63 83 - 85 | F (0312) 345 63 83</p>
+                        <p>info@ormentekstil.com.tr | www.ormentekstil.com.tr</p>
+                    </div>
+                </div>
+
+                <div class="doc-title-row">
+                    <h2 class="doc-title">ÇEKİ LİSTESİ</h2>
+                    <div class="doc-meta">
+                        <p>TARİH: <span id="cl-tarih-display"></span></p>
+                        <p>İRSALİYE NO: <span id="cl-irsaliye-display"></span></p>
+                    </div>
+                </div>
+
+                <!-- Alıcı / Sevkiyat Bilgileri -->
+                <div class="doc-info-row">
+                    <div class="doc-info-block">
+                        <p><strong>GÖNDERİCİ:</strong> ORMEN TEKSTİL</p>
+                    </div>
+                    <div class="doc-info-block">
+                        <p><strong>ALICI:</strong> <span id="cl-alici-display"></span></p>
+                        <p><span id="cl-adres-display"></span></p>
+                    </div>
+                    <div class="doc-info-block">
+                        <p><strong>ARAÇ:</strong> <span id="cl-plaka-display"></span></p>
+                    </div>
+                </div>
+
+                <table class="doc-table" id="cl-table">
+                    <thead>
+                        <tr>
+                            <th class="col-no">NO</th>
+                            <th>ÜRÜN ADI</th>
+                            <th>TOP/KOLİ</th>
+                            <th>RENK</th>
+                            <th>METRE/KG</th>
+                            <th>BRÜT (kg)</th>
+                            <th>NET (kg)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cl-tbody">
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="2"><strong>TOPLAM</strong></td>
+                            <td id="cl-total-top"><strong>0</strong></td>
+                            <td></td>
+                            <td id="cl-total-metre"><strong>0</strong></td>
+                            <td id="cl-total-brut"><strong>0</strong></td>
+                            <td id="cl-total-net"><strong>0</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div class="doc-signatures">
+                    <div class="signature-block">
+                        <div class="signature-line"></div>
+                        <p>TESLİM EDEN</p>
+                    </div>
+                    <div class="signature-block">
+                        <div class="signature-line"></div>
+                        <p>TESLİM ALAN</p>
+                    </div>
+                </div>
+
+                <div class="doc-footer">
+                    <p>ORMEN TEKSTİL &middot; www.ormentekstil.com.tr &middot; info@ormentekstil.com.tr &middot; (0312) 345 63 83</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-export" id="cl-pdf">PDF'e Aktar</button>
+            <button class="btn btn-clear" id="cl-temizle">Listeyi Temizle</button>
+        </div>
+    </section>
+
+    <!-- ==================== AÇIKLAMA METNİ ==================== -->
+    <section id="aciklama-metni" class="tab-content">
+        <div class="form-controls">
+            <h2>Ürün Açıklama Metni Oluştur</h2>
+            <p class="form-hint">WhatsApp veya sosyal medyada paylaşmak için hazır metin oluşturun.</p>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ürün Adı</label>
+                    <input type="text" id="am-urun" placeholder="Ör: ARIA">
+                </div>
+                <div class="form-group">
+                    <label>Ürün Tipi</label>
+                    <input type="text" id="am-tip" placeholder="Ör: Döşemelik Kumaş">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Özellikler</label>
+                    <input type="text" id="am-ozellik" placeholder="Ör: %100 Polyester, Kadife Doku">
+                </div>
+                <div class="form-group">
+                    <label>Renk Seçenekleri</label>
+                    <input type="text" id="am-renk" placeholder="Ör: Lacivert, Bordo, Krem, Gri">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>En (cm)</label>
+                    <input type="text" id="am-en" placeholder="Ör: 280 cm">
+                </div>
+                <div class="form-group">
+                    <label>Fiyat</label>
+                    <input type="text" id="am-fiyat" placeholder="Ör: 5.75$">
+                </div>
+                <div class="form-group">
+                    <label>Minimum Sipariş</label>
+                    <input type="text" id="am-min" placeholder="Ör: 50 metre">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <label>Ekstra Not</label>
+                    <input type="text" id="am-not" placeholder="Ör: Stoklar sınırlıdır, acele edin!">
+                </div>
+            </div>
+            <button class="btn btn-add" id="am-olustur">Metni Oluştur</button>
+        </div>
+
+        <!-- Metin Önizleme -->
+        <div class="preview-area" id="am-preview">
+            <div class="text-preview" id="am-text-output">
+                <p class="placeholder-text">Yukarıdaki formu doldurup "Metni Oluştur" butonuna tıklayın.</p>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-copy" id="am-kopyala">Metni Kopyala</button>
+            <button class="btn btn-whatsapp" id="am-whatsapp">WhatsApp'ta Paylaş</button>
+        </div>
+    </section>
+
+    <!-- ==================== SİPARİŞ MAİL ==================== -->
+    <section id="siparis-mail" class="tab-content">
+        <div class="form-controls">
+            <h2>Sipariş Mail Şablonu</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Alıcı (Fabrika/Tedarikçi)</label>
+                    <input type="text" id="sm-alici" placeholder="Firma adı">
+                </div>
+                <div class="form-group">
+                    <label>E-posta Adresi</label>
+                    <input type="email" id="sm-email" placeholder="info@fabrika.com">
+                </div>
+                <div class="form-group">
+                    <label>Teslim Tarihi</label>
+                    <input type="date" id="sm-teslim">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ödeme Koşulu</label>
+                    <select id="sm-odeme">
+                        <option value="PEŞİN">PEŞİN</option>
+                        <option value="VADELİ">VADELİ</option>
+                        <option value="30 GÜN VADELİ">30 GÜN VADELİ</option>
+                        <option value="60 GÜN VADELİ">60 GÜN VADELİ</option>
+                    </select>
+                </div>
+                <div class="form-group full-width">
+                    <label>Özel Notlar</label>
+                    <input type="text" id="sm-not" placeholder="Ör: Lütfen kalite kontrolü yapılsın">
+                </div>
+            </div>
+            <hr class="form-divider">
+            <h3>Sipariş Kalemi Ekle</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ürün Adı</label>
+                    <input type="text" id="sm-urun" placeholder="Ör: ARIA">
+                </div>
+                <div class="form-group">
+                    <label>Renk</label>
+                    <input type="text" id="sm-renk" placeholder="Ör: Lacivert">
+                </div>
+                <div class="form-group">
+                    <label>Miktar (metre/kg)</label>
+                    <input type="number" id="sm-miktar" placeholder="Ör: 500" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Birim Fiyat</label>
+                    <input type="number" id="sm-fiyat" placeholder="Ör: 3.95" step="0.01">
+                </div>
+                <div class="form-group form-group-btn">
+                    <button class="btn btn-add" id="sm-ekle">+ Ekle</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mail Önizleme -->
+        <div class="preview-area" id="sm-preview">
+            <div class="text-preview" id="sm-text-output">
+                <p class="placeholder-text">Sipariş kalemlerini ekleyip mail önizlemesini görün.</p>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-copy" id="sm-kopyala">Maili Kopyala</button>
+            <button class="btn btn-mailto" id="sm-mailto">Mail Gönder</button>
+        </div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/fiyat-listesi.js"></script>
+    <script src="js/ceki-listesi.js"></script>
+    <script src="js/aciklama-metni.js"></script>
+    <script src="js/siparis-mail.js"></script>
+</body>
+</html>
