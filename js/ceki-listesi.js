@@ -1,7 +1,8 @@
 // ===== ÇEKİ LİSTESİ MODÜLÜ v4 (Textarea → Analiz → Grupla) =====
 
 (function() {
-    var gruplar = []; // { kod: 'Bentley 03', metre: 102, top: 2 }
+    var gruplar = []; // { kod: 'Bentley 03', metre: 102, top: 2, karma: 0 }
+    var fizikselTopSayisi = 0; // toplam fiziksel top (karma dahil)
 
     // Form elemanları
     var cekiNoInput = document.getElementById('cl-ceki-no');
@@ -129,40 +130,57 @@
     });
 
     // === HAM VERİ ANALİZ ===
-    // Format: "Bentley 03 - 50 metre" veya "Bentley 03 - 50"
+    // Normal satır: "Bentley 03 - 50 metre"  → 1 fiziksel top
+    // Karma satır:  "+Bentley 02 - 17 metre" → aynı fiziksel top (karma sarım)
     function parseHamVeri(text) {
         var lines = text.split('\n');
-        var map = {}; // { 'BENTLEY 03': { metre: 0, top: 0 } }
+        var map = {}; // { 'BENTLEY 03': { metre: 0, top: 0, karma: 0 } }
         var order = []; // sırayı koru
+        var topCount = 0; // fiziksel top sayacı
 
         lines.forEach(function(line) {
             line = line.trim();
             if (!line) return;
+
+            // + ile başlıyorsa karma top (önceki topun devamı)
+            var isKarma = line.charAt(0) === '+';
+            if (isKarma) {
+                line = line.substring(1).trim();
+            } else {
+                topCount++; // yeni fiziksel top
+            }
 
             // "Bentley 03 - 50 metre" veya "Bentley 03 - 50"
             var parts = line.split(/\s*-\s*/);
             if (parts.length < 2) return;
 
             var kod = parts[0].trim().toUpperCase();
-            var metreStr = parts[1].trim().replace(/[^0-9.,]/g, '');
+            var metreStr = parts.slice(1).join('-').trim().replace(/[^0-9.,]/g, '');
             var metre = parseFloat(metreStr.replace(',', '.')) || 0;
 
             if (!kod) return;
 
             if (!map[kod]) {
-                map[kod] = { metre: 0, top: 0 };
+                map[kod] = { metre: 0, top: 0, karma: 0 };
                 order.push(kod);
             }
             map[kod].metre += metre;
-            map[kod].top += 1;
+            if (isKarma) {
+                map[kod].karma += 1;
+            } else {
+                map[kod].top += 1;
+            }
         });
+
+        fizikselTopSayisi = topCount;
 
         var result = [];
         order.forEach(function(kod) {
             result.push({
                 kod: kod,
                 metre: Math.round(map[kod].metre * 100) / 100,
-                top: map[kod].top
+                top: map[kod].top,
+                karma: map[kod].karma
             });
         });
         return result;
@@ -189,28 +207,42 @@
         showToast(gruplar.length + ' ürün gruplanarak listelendi!');
     });
 
+    // Top bilgisi string oluştur
+    function topLabel(g) {
+        if (g.karma > 0 && g.top > 0) {
+            return g.top + ' top + ' + g.karma + ' karma';
+        } else if (g.karma > 0 && g.top === 0) {
+            return g.karma + ' karma';
+        }
+        return g.top + ' top';
+    }
+
     // === Tablo Render ===
     function renderTable() {
         tbody.innerHTML = '';
         docTbody.innerHTML = '';
-        var sumTop = 0, sumMetre = 0;
+        var sumMetre = 0;
+        var hasKarma = false;
 
         if (gruplar.length === 0) {
             tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Henüz ürün eklenmedi</td></tr>';
         }
 
         gruplar.forEach(function(g, index) {
-            sumTop += g.top;
             sumMetre += g.metre;
+            if (g.karma > 0) hasKarma = true;
+
+            var topStr = topLabel(g);
 
             // UI tablo
             var tr = document.createElement('tr');
             tr.style.animation = 'slideIn 0.2s ease';
+            if (g.karma > 0) tr.classList.add('karma-row');
             tr.innerHTML =
                 '<td>' + (index + 1) + '</td>' +
-                '<td><strong>' + g.kod + '</strong></td>' +
+                '<td><strong>' + g.kod + '</strong>' + (g.karma > 0 ? ' <span class="karma-badge">K</span>' : '') + '</td>' +
                 '<td>' + g.metre + ' metre</td>' +
-                '<td>' + g.top + ' top</td>' +
+                '<td>' + topStr + '</td>' +
                 '<td class="col-action"><button class="delete-btn" data-index="' + index + '">&times;</button></td>';
             tbody.appendChild(tr);
 
@@ -218,19 +250,19 @@
             var docTr = document.createElement('tr');
             docTr.innerHTML =
                 '<td>' + (index + 1) + '</td>' +
-                '<td>' + g.kod + '</td>' +
+                '<td>' + g.kod + (g.karma > 0 ? ' *' : '') + '</td>' +
                 '<td>' + g.metre + '</td>' +
-                '<td>' + g.top + '</td>';
+                '<td>' + topStr + '</td>';
             docTbody.appendChild(docTr);
         });
 
-        totalTop.innerHTML = '<strong>' + sumTop + '</strong>';
         totalMetre.innerHTML = '<strong>' + sumMetre + '</strong>';
+        totalTop.innerHTML = '<strong>' + fizikselTopSayisi + '</strong>';
 
-        docTotalTop.innerHTML = '<strong>' + sumTop + '</strong>';
         docTotalMetre.innerHTML = '<strong>' + sumMetre + '</strong>';
+        docTotalTop.innerHTML = '<strong>' + fizikselTopSayisi + '</strong>';
 
-        countBadge.textContent = gruplar.length + ' kalem';
+        countBadge.textContent = gruplar.length + ' kalem' + (hasKarma ? ' (karma var)' : '') + ' | ' + fizikselTopSayisi + ' fiziksel top';
 
         tbody.querySelectorAll('.delete-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
@@ -266,15 +298,14 @@
         if (aliciInput.value) text += 'Alıcı: *' + aliciInput.value + '*\n';
         text += '━━━━━━━━━━━━━━━━━━━━\n\n';
 
-        var sumTop = 0, sumMetre = 0;
+        var sumMetre = 0;
         gruplar.forEach(function(g) {
-            text += '📦 ' + g.kod + ' - ' + g.metre + ' metre (' + g.top + ' top)\n';
-            sumTop += g.top;
+            text += '📦 ' + g.kod + ' - ' + g.metre + ' metre (' + topLabel(g) + ')\n';
             sumMetre += g.metre;
         });
 
         text += '\n━━━━━━━━━━━━━━━━━━━━\n';
-        text += '*TOPLAM: ' + sumMetre + ' metre (' + sumTop + ' top)*\n';
+        text += '*TOPLAM: ' + sumMetre + ' metre (' + fizikselTopSayisi + ' fiziksel top)*\n';
         text += '━━━━━━━━━━━━━━━━━━━━\n';
         text += 'ORMEN TEKSTİL | 0312 349 68 88';
 
@@ -288,14 +319,12 @@
 
         var headers = ['NO', 'ÜRÜN KODU', 'METRE', 'TOP'];
         var data = gruplar.map(function(g, i) {
-            return [i + 1, g.kod, g.metre, g.top];
+            return [i + 1, g.kod, g.metre, topLabel(g)];
         });
 
-        var sumTop = 0, sumMetre = 0;
-        gruplar.forEach(function(g) {
-            sumTop += g.top; sumMetre += g.metre;
-        });
-        data.push(['', 'TOPLAM', sumMetre, sumTop]);
+        var sumMetre = 0;
+        gruplar.forEach(function(g) { sumMetre += g.metre; });
+        data.push(['', 'TOPLAM', sumMetre, fizikselTopSayisi + ' fiziksel top']);
 
         var meta = [
             ['ORMEN TEKSTİL - ÇEKİ LİSTESİ'],
