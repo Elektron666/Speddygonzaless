@@ -900,6 +900,40 @@ body {
     background: var(--color-success);
 }
 
+/* ===== CHECKBOX & TESLİM ===== */
+.col-check, .col-check-doc { width: 36px; text-align: center; }
+
+.top-check {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--color-success);
+}
+
+.checked-row {
+    background: #f0fdf4 !important;
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.check-box {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid #333;
+    border-radius: 2px;
+}
+
+.doc-ozet-section {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #ddd;
+}
+
+.doc-table-sm { font-size: 11px; }
+.doc-table-sm th { padding: 4px 8px; }
+.doc-table-sm td { padding: 3px 8px; }
+
 /* ===== ANİMASYONLAR ===== */
 @keyframes slideIn {
     from { opacity: 0; transform: translateY(-8px); }

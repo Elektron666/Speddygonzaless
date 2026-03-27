@@ -154,20 +154,20 @@ Madrid 15 - 55 metre"></textarea>
                 </div>
             </div>
 
-            <!-- Ürün Tablosu -->
+            <!-- Top Detay Tablosu (tek tek her top) -->
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Ürünler</h2>
-                    <span class="badge" id="cl-count">0 kalem</span>
+                    <h2 class="card-title">Top Detay</h2>
+                    <span class="badge" id="cl-count">0 top</span>
                 </div>
                 <div class="table-wrapper">
                     <table class="data-table" id="cl-table">
                         <thead>
                             <tr>
+                                <th class="col-check">✓</th>
                                 <th class="col-no">NO</th>
                                 <th>ÜRÜN KODU</th>
                                 <th>METRE</th>
-                                <th>TOP</th>
                                 <th class="col-action"></th>
                             </tr>
                         </thead>
@@ -178,10 +178,37 @@ Madrid 15 - 55 metre"></textarea>
                         </tbody>
                         <tfoot>
                             <tr class="total-row">
-                                <td colspan="2"><strong>TOPLAM</strong></td>
+                                <td colspan="3"><strong>TOPLAM</strong></td>
                                 <td id="cl-total-metre"><strong>0</strong></td>
-                                <td id="cl-total-top"><strong>0</strong></td>
                                 <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Özet Tablosu (gruplanmış) -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Özet</h2>
+                    <span class="badge" id="cl-ozet-count">0 kalem</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table" id="cl-ozet-table">
+                        <thead>
+                            <tr>
+                                <th class="col-no">NO</th>
+                                <th>ÜRÜN KODU</th>
+                                <th>TOPLAM METRE</th>
+                                <th>TOP SAYISI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cl-ozet-tbody"></tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td colspan="2"><strong>GENEL TOPLAM</strong></td>
+                                <td id="cl-ozet-total-metre"><strong>0</strong></td>
+                                <td id="cl-ozet-total-top"><strong>0</strong></td>
                             </tr>
                         </tfoot>
                     </table>
@@ -270,25 +297,48 @@ Madrid 15 - 55 metre"></textarea>
                             </div>
                         </div>
 
+                        <!-- Tek tek toplar (checkbox ile) -->
                         <table class="doc-table" id="cl-doc-table">
                             <thead>
                                 <tr>
+                                    <th class="col-check-doc">✓</th>
                                     <th class="col-no">NO</th>
                                     <th>ÜRÜN KODU</th>
                                     <th>METRE</th>
-                                    <th>TOP</th>
                                 </tr>
                             </thead>
                             <tbody id="cl-doc-tbody">
                             </tbody>
                             <tfoot>
                                 <tr class="total-row">
-                                    <td colspan="2"><strong>TOPLAM</strong></td>
+                                    <td colspan="3"><strong>TOPLAM</strong></td>
                                     <td id="cl-doc-total-metre"><strong>0</strong></td>
-                                    <td id="cl-doc-total-top"><strong>0</strong></td>
                                 </tr>
                             </tfoot>
                         </table>
+
+                        <!-- Gruplanmış Özet -->
+                        <div class="doc-ozet-section">
+                            <p class="doc-info-label">ÖZET</p>
+                            <table class="doc-table doc-table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>ÜRÜN KODU</th>
+                                        <th>TOPLAM METRE</th>
+                                        <th>TOP</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cl-doc-ozet-tbody">
+                                </tbody>
+                                <tfoot>
+                                    <tr class="total-row">
+                                        <td><strong>GENEL TOPLAM</strong></td>
+                                        <td id="cl-doc-ozet-total-metre"><strong>0</strong></td>
+                                        <td id="cl-doc-ozet-total-top"><strong>0</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
 
                         <div class="doc-notes" id="cl-doc-notlar" style="display:none;">
                             <p class="doc-info-label">NOTLAR</p>
