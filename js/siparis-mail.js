@@ -1,4 +1,4 @@
-// ===== SİPARİŞ MODÜLÜ v2 (Sade Format) =====
+// ===== SİPARİŞ MODÜLÜ v3 (Top + Metre Desteği) =====
 
 (function() {
     var kalemler = [];
@@ -6,7 +6,8 @@
     var ustMetin = document.getElementById('sm-ust');
     var emailInput = document.getElementById('sm-email');
     var urunInput = document.getElementById('sm-urun');
-    var topInput = document.getElementById('sm-top');
+    var miktarInput = document.getElementById('sm-miktar');
+    var birimSelect = document.getElementById('sm-birim');
     var ekleBtn = document.getElementById('sm-ekle');
     var altMetin = document.getElementById('sm-alt');
     var kalemlerDiv = document.getElementById('sm-kalemler');
@@ -18,17 +19,17 @@
     // Kalem ekle
     function addItem() {
         var urun = urunInput.value.trim();
-        var top = topInput.value.trim();
+        var miktar = miktarInput.value.trim();
 
         if (!urun) { urunInput.focus(); return; }
-        if (!top) { topInput.focus(); return; }
+        if (!miktar) { miktarInput.focus(); return; }
 
-        kalemler.push({ urun: urun, top: top });
+        kalemler.push({ urun: urun, miktar: miktar, birim: birimSelect.value });
         renderKalemler();
         renderPreview();
 
         urunInput.value = '';
-        topInput.value = '';
+        miktarInput.value = '';
         urunInput.focus();
     }
 
@@ -36,9 +37,9 @@
 
     // Enter ile ekle veya sonraki inputa geç
     urunInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') topInput.focus();
+        if (e.key === 'Enter') miktarInput.focus();
     });
-    topInput.addEventListener('keypress', function(e) {
+    miktarInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') addItem();
     });
 
@@ -49,7 +50,7 @@
             var div = document.createElement('div');
             div.className = 'siparis-kalem';
             div.innerHTML =
-                '<span class="kalem-text">' + kalem.urun + ' - <strong>' + kalem.top + ' top</strong></span>' +
+                '<span class="kalem-text">' + kalem.urun + ' - <strong>' + kalem.miktar + ' ' + kalem.birim + '</strong></span>' +
                 '<button class="kalem-sil" data-index="' + index + '">&times;</button>';
             kalemlerDiv.appendChild(div);
         });
@@ -82,7 +83,7 @@
         text += ustMetin.value.trim() + '\n\n';
 
         kalemler.forEach(function(kalem) {
-            text += kalem.urun + ' - ' + kalem.top + ' top\n';
+            text += kalem.urun + ' - ' + kalem.miktar + ' ' + kalem.birim + '\n';
         });
 
         text += '\n' + altMetin.value.trim();

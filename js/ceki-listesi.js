@@ -1,7 +1,7 @@
-// ===== ÇEKİ LİSTESİ MODÜLÜ v3 =====
+// ===== ÇEKİ LİSTESİ MODÜLÜ v4 (Textarea → Analiz → Grupla) =====
 
 (function() {
-    var kalemler = [];
+    var gruplar = []; // { kod: 'Bentley 03', metre: 102, top: 2 }
 
     // Form elemanları
     var cekiNoInput = document.getElementById('cl-ceki-no');
@@ -15,27 +15,15 @@
     var adresInput = document.getElementById('cl-adres');
     var sehirInput = document.getElementById('cl-sehir');
     var telefonInput = document.getElementById('cl-telefon');
-    var urunInput = document.getElementById('cl-urun');
-    var renkInput = document.getElementById('cl-renk');
-    var partiInput = document.getElementById('cl-parti');
-    var topInput = document.getElementById('cl-top');
-    var metreInput = document.getElementById('cl-metre');
-    var brutInput = document.getElementById('cl-brut');
-    var netInput = document.getElementById('cl-net');
-    var ekleBtn = document.getElementById('cl-ekle');
+    var hamVeriTextarea = document.getElementById('cl-ham-veri');
+    var analizBtn = document.getElementById('cl-analiz');
     var notlarTextarea = document.getElementById('cl-notlar');
-
-    // Katalog
-    var katalogSelect = document.getElementById('cl-katalog');
-    var katalogKaydetBtn = document.getElementById('cl-katalog-kaydet');
 
     // Tablo
     var tbody = document.getElementById('cl-tbody');
     var countBadge = document.getElementById('cl-count');
     var totalTop = document.getElementById('cl-total-top');
     var totalMetre = document.getElementById('cl-total-metre');
-    var totalBrut = document.getElementById('cl-total-brut');
-    var totalNet = document.getElementById('cl-total-net');
 
     // Belge display
     var cekiNoDisplay = document.getElementById('cl-ceki-no-display');
@@ -52,8 +40,6 @@
     var docTbody = document.getElementById('cl-doc-tbody');
     var docTotalTop = document.getElementById('cl-doc-total-top');
     var docTotalMetre = document.getElementById('cl-doc-total-metre');
-    var docTotalBrut = document.getElementById('cl-doc-total-brut');
-    var docTotalNet = document.getElementById('cl-doc-total-net');
     var docNotlar = document.getElementById('cl-doc-notlar');
     var docNotlarText = document.getElementById('cl-doc-notlar-text');
 
@@ -65,7 +51,6 @@
     var excelBtn = document.getElementById('cl-excel');
 
     // === Init ===
-    // Taslak yükle
     var draft = loadDraft('ceki');
     if (draft) {
         cekiNoInput.value = draft.cekiNo || generateCekiNo();
@@ -79,15 +64,13 @@
         if (draft.sehir) sehirInput.value = draft.sehir;
         if (draft.telefon) telefonInput.value = draft.telefon;
         if (draft.notlar) notlarTextarea.value = draft.notlar;
-        if (draft.kalemler && draft.kalemler.length > 0) {
-            kalemler = draft.kalemler;
+        if (draft.hamVeri) hamVeriTextarea.value = draft.hamVeri;
+        if (draft.gruplar && draft.gruplar.length > 0) {
+            gruplar = draft.gruplar;
         }
     } else {
         cekiNoInput.value = generateCekiNo();
     }
-
-    // Katalog dropdown doldur
-    renderKatalogSelect(katalogSelect);
 
     // === Auto-Save ===
     function triggerAutoSave() {
@@ -103,7 +86,8 @@
             sehir: sehirInput.value,
             telefon: telefonInput.value,
             notlar: notlarTextarea.value,
-            kalemler: kalemler
+            hamVeri: hamVeriTextarea.value,
+            gruplar: gruplar
         });
     }
 
@@ -138,145 +122,119 @@
 
     // Tüm input'lara dinleyici
     var allInputs = [tarihInput, irsaliyeInput, sevkTipiSelect, plakaInput, soforInput,
-                     aliciInput, yetkiliInput, adresInput, sehirInput, telefonInput, notlarTextarea];
+                     aliciInput, yetkiliInput, adresInput, sehirInput, telefonInput, notlarTextarea, hamVeriTextarea];
     allInputs.forEach(function(el) {
         el.addEventListener('input', updateDisplays);
         el.addEventListener('change', updateDisplays);
     });
 
-    // === Katalog: Seçim ===
-    katalogSelect.addEventListener('change', function() {
-        if (this.value === '') return;
-        var katalog = getKatalog();
-        var urun = katalog[parseInt(this.value)];
-        if (urun) {
-            urunInput.value = urun.ad || '';
-            renkInput.value = urun.renk || '';
-            partiInput.value = urun.parti || '';
-            if (urun.brut) brutInput.value = urun.brut;
-            if (urun.net) netInput.value = urun.net;
-            topInput.focus();
+    // === HAM VERİ ANALİZ ===
+    // Format: "Bentley 03 - 50 metre" veya "Bentley 03 - 50"
+    function parseHamVeri(text) {
+        var lines = text.split('\n');
+        var map = {}; // { 'BENTLEY 03': { metre: 0, top: 0 } }
+        var order = []; // sırayı koru
+
+        lines.forEach(function(line) {
+            line = line.trim();
+            if (!line) return;
+
+            // "Bentley 03 - 50 metre" veya "Bentley 03 - 50"
+            var parts = line.split(/\s*-\s*/);
+            if (parts.length < 2) return;
+
+            var kod = parts[0].trim().toUpperCase();
+            var metreStr = parts[1].trim().replace(/[^0-9.,]/g, '');
+            var metre = parseFloat(metreStr.replace(',', '.')) || 0;
+
+            if (!kod) return;
+
+            if (!map[kod]) {
+                map[kod] = { metre: 0, top: 0 };
+                order.push(kod);
+            }
+            map[kod].metre += metre;
+            map[kod].top += 1;
+        });
+
+        var result = [];
+        order.forEach(function(kod) {
+            result.push({
+                kod: kod,
+                metre: Math.round(map[kod].metre * 100) / 100,
+                top: map[kod].top
+            });
+        });
+        return result;
+    }
+
+    // Analiz Et butonu
+    analizBtn.addEventListener('click', function() {
+        var text = hamVeriTextarea.value.trim();
+        if (!text) {
+            showToast('Lütfen ürün verisi girin.');
+            hamVeriTextarea.focus();
+            return;
         }
-        this.value = '';
-    });
 
-    // === Katalog: Kaydet ===
-    katalogKaydetBtn.addEventListener('click', function() {
-        var ad = urunInput.value.trim().toUpperCase();
-        if (!ad) { showToast('Önce ürün adı girin.'); urunInput.focus(); return; }
-        saveToKatalog({
-            ad: ad,
-            renk: renkInput.value.trim(),
-            parti: partiInput.value.trim(),
-            brut: brutInput.value || '',
-            net: netInput.value || ''
-        });
-        renderKatalogSelect(katalogSelect);
-        showToast(ad + ' kataloğa kaydedildi!');
-    });
+        gruplar = parseHamVeri(text);
 
-    // === Ürün Ekle ===
-    function addItem() {
-        var urunAdi = urunInput.value.trim().toUpperCase();
-        if (!urunAdi) { urunInput.focus(); return; }
-
-        kalemler.push({
-            ad: urunAdi,
-            renk: renkInput.value.trim(),
-            parti: partiInput.value.trim(),
-            top: parseInt(topInput.value) || 0,
-            metre: parseFloat(metreInput.value) || 0,
-            brut: parseFloat(brutInput.value) || 0,
-            net: parseFloat(netInput.value) || 0
-        });
+        if (gruplar.length === 0) {
+            showToast('Veri okunamadı. Format: Ürün Kodu - Metre');
+            return;
+        }
 
         renderTable();
         triggerAutoSave();
-
-        urunInput.value = '';
-        renkInput.value = '';
-        partiInput.value = '';
-        topInput.value = '';
-        metreInput.value = '';
-        brutInput.value = '';
-        netInput.value = '';
-        urunInput.focus();
-    }
-
-    ekleBtn.addEventListener('click', addItem);
-
-    // Enter tuşları
-    var addInputs = [urunInput, renkInput, partiInput, topInput, metreInput, brutInput, netInput];
-    addInputs.forEach(function(input, index) {
-        input.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                if (index < addInputs.length - 1) {
-                    addInputs[index + 1].focus();
-                } else {
-                    addItem();
-                }
-            }
-        });
+        showToast(gruplar.length + ' ürün gruplanarak listelendi!');
     });
 
     // === Tablo Render ===
     function renderTable() {
         tbody.innerHTML = '';
         docTbody.innerHTML = '';
-        var sumTop = 0, sumMetre = 0, sumBrut = 0, sumNet = 0;
+        var sumTop = 0, sumMetre = 0;
 
-        if (kalemler.length === 0) {
-            tbody.innerHTML = '<tr class="empty-row"><td colspan="9">Henüz ürün eklenmedi</td></tr>';
+        if (gruplar.length === 0) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Henüz ürün eklenmedi</td></tr>';
         }
 
-        kalemler.forEach(function(kalem, index) {
-            sumTop += kalem.top;
-            sumMetre += kalem.metre;
-            sumBrut += kalem.brut;
-            sumNet += kalem.net;
+        gruplar.forEach(function(g, index) {
+            sumTop += g.top;
+            sumMetre += g.metre;
 
+            // UI tablo
             var tr = document.createElement('tr');
             tr.style.animation = 'slideIn 0.2s ease';
             tr.innerHTML =
                 '<td>' + (index + 1) + '</td>' +
-                '<td><strong>' + kalem.ad + '</strong></td>' +
-                '<td>' + kalem.renk + '</td>' +
-                '<td>' + kalem.parti + '</td>' +
-                '<td>' + kalem.top + '</td>' +
-                '<td>' + kalem.metre.toFixed(2) + '</td>' +
-                '<td>' + kalem.brut.toFixed(2) + '</td>' +
-                '<td>' + kalem.net.toFixed(2) + '</td>' +
+                '<td><strong>' + g.kod + '</strong></td>' +
+                '<td>' + g.metre + ' metre</td>' +
+                '<td>' + g.top + ' top</td>' +
                 '<td class="col-action"><button class="delete-btn" data-index="' + index + '">&times;</button></td>';
             tbody.appendChild(tr);
 
+            // Belge tablo
             var docTr = document.createElement('tr');
             docTr.innerHTML =
                 '<td>' + (index + 1) + '</td>' +
-                '<td>' + kalem.ad + '</td>' +
-                '<td>' + kalem.renk + '</td>' +
-                '<td>' + kalem.parti + '</td>' +
-                '<td>' + kalem.top + '</td>' +
-                '<td>' + kalem.metre.toFixed(2) + '</td>' +
-                '<td>' + kalem.brut.toFixed(2) + '</td>' +
-                '<td>' + kalem.net.toFixed(2) + '</td>';
+                '<td>' + g.kod + '</td>' +
+                '<td>' + g.metre + '</td>' +
+                '<td>' + g.top + '</td>';
             docTbody.appendChild(docTr);
         });
 
         totalTop.innerHTML = '<strong>' + sumTop + '</strong>';
-        totalMetre.innerHTML = '<strong>' + sumMetre.toFixed(2) + '</strong>';
-        totalBrut.innerHTML = '<strong>' + sumBrut.toFixed(2) + '</strong>';
-        totalNet.innerHTML = '<strong>' + sumNet.toFixed(2) + '</strong>';
+        totalMetre.innerHTML = '<strong>' + sumMetre + '</strong>';
 
         docTotalTop.innerHTML = '<strong>' + sumTop + '</strong>';
-        docTotalMetre.innerHTML = '<strong>' + sumMetre.toFixed(2) + '</strong>';
-        docTotalBrut.innerHTML = '<strong>' + sumBrut.toFixed(2) + '</strong>';
-        docTotalNet.innerHTML = '<strong>' + sumNet.toFixed(2) + '</strong>';
+        docTotalMetre.innerHTML = '<strong>' + sumMetre + '</strong>';
 
-        countBadge.textContent = kalemler.length + ' kalem';
+        countBadge.textContent = gruplar.length + ' kalem';
 
         tbody.querySelectorAll('.delete-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
-                kalemler.splice(parseInt(this.dataset.index), 1);
+                gruplar.splice(parseInt(this.dataset.index), 1);
                 renderTable();
                 triggerAutoSave();
             });
@@ -285,7 +243,7 @@
 
     // === PDF Export ===
     pdfBtn.addEventListener('click', function() {
-        if (kalemler.length === 0) { showToast('Lütfen en az bir ürün ekleyin.'); return; }
+        if (gruplar.length === 0) { showToast('Önce verileri analiz edin.'); return; }
         var tarih = formatDate(tarihInput.value).replace(/\//g, '-');
         var alici = aliciInput.value.trim().replace(/\s+/g, '_') || 'Ceki';
         exportPDF('cl-document', 'ORMEN_Ceki_' + alici + '_' + tarih + '.pdf');
@@ -293,13 +251,13 @@
 
     // === Yazdır ===
     yazdirBtn.addEventListener('click', function() {
-        if (kalemler.length === 0) { showToast('Lütfen en az bir ürün ekleyin.'); return; }
+        if (gruplar.length === 0) { showToast('Önce verileri analiz edin.'); return; }
         window.print();
     });
 
     // === WhatsApp Çeki Özeti ===
     whatsappBtn.addEventListener('click', function() {
-        if (kalemler.length === 0) { showToast('Lütfen en az bir ürün ekleyin.'); return; }
+        if (gruplar.length === 0) { showToast('Önce verileri analiz edin.'); return; }
 
         var text = '*ORMEN TEKSTİL - Çeki Özeti*\n';
         text += '━━━━━━━━━━━━━━━━━━━━\n';
@@ -309,22 +267,16 @@
         text += '━━━━━━━━━━━━━━━━━━━━\n\n';
 
         var sumTop = 0, sumMetre = 0;
-        kalemler.forEach(function(k) {
-            text += '📦 ' + k.ad;
-            if (k.renk) text += ' (' + k.renk + ')';
-            text += ' - ' + k.top + ' top';
-            if (k.metre > 0) text += ' / ' + k.metre.toFixed(0) + ' mt';
-            text += '\n';
-            sumTop += k.top;
-            sumMetre += k.metre;
+        gruplar.forEach(function(g) {
+            text += '📦 ' + g.kod + ' - ' + g.metre + ' metre (' + g.top + ' top)\n';
+            sumTop += g.top;
+            sumMetre += g.metre;
         });
 
         text += '\n━━━━━━━━━━━━━━━━━━━━\n';
-        text += '*TOPLAM: ' + sumTop + ' top';
-        if (sumMetre > 0) text += ' / ' + sumMetre.toFixed(0) + ' mt';
-        text += '*\n';
+        text += '*TOPLAM: ' + sumMetre + ' metre (' + sumTop + ' top)*\n';
         text += '━━━━━━━━━━━━━━━━━━━━\n';
-        text += 'ORMEN TEKSTİL | (0312) 345 63 83';
+        text += 'ORMEN TEKSTİL | 0312 349 68 88';
 
         var encoded = encodeURIComponent(text);
         window.open('https://wa.me/?text=' + encoded, '_blank');
@@ -332,21 +284,19 @@
 
     // === Excel Export ===
     excelBtn.addEventListener('click', function() {
-        if (kalemler.length === 0) { showToast('Lütfen en az bir ürün ekleyin.'); return; }
+        if (gruplar.length === 0) { showToast('Önce verileri analiz edin.'); return; }
 
-        var headers = ['NO', 'ÜRÜN ADI', 'RENK', 'PARTİ NO', 'TOP', 'METRE/KG', 'BRÜT (kg)', 'NET (kg)'];
-        var data = kalemler.map(function(k, i) {
-            return [i + 1, k.ad, k.renk, k.parti, k.top, k.metre, k.brut, k.net];
+        var headers = ['NO', 'ÜRÜN KODU', 'METRE', 'TOP'];
+        var data = gruplar.map(function(g, i) {
+            return [i + 1, g.kod, g.metre, g.top];
         });
 
-        // Toplam satırı
-        var sumTop = 0, sumMetre = 0, sumBrut = 0, sumNet = 0;
-        kalemler.forEach(function(k) {
-            sumTop += k.top; sumMetre += k.metre; sumBrut += k.brut; sumNet += k.net;
+        var sumTop = 0, sumMetre = 0;
+        gruplar.forEach(function(g) {
+            sumTop += g.top; sumMetre += g.metre;
         });
-        data.push(['', 'TOPLAM', '', '', sumTop, sumMetre, sumBrut, sumNet]);
+        data.push(['', 'TOPLAM', sumMetre, sumTop]);
 
-        // Meta bilgi satırları (üste)
         var meta = [
             ['ORMEN TEKSTİL - ÇEKİ LİSTESİ'],
             ['Çeki No: ' + cekiNoInput.value, '', 'Tarih: ' + formatDate(tarihInput.value)],
@@ -361,8 +311,9 @@
 
     // === Temizle ===
     temizleBtn.addEventListener('click', function() {
-        kalemler = [];
+        gruplar = [];
         renderTable();
+        hamVeriTextarea.value = '';
         irsaliyeInput.value = '';
         plakaInput.value = '';
         soforInput.value = '';

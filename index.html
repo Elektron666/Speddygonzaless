@@ -91,10 +91,10 @@
                     <div class="card-body">
                         <div class="sender-info">
                             <p class="sender-name">ORMEN TEKSTİL</p>
-                            <p>A.Önder Mah. Karpuzlu 1.Cadde No:05/A</p>
-                            <p>06105 Ankara</p>
-                            <p>T: (0312) 345 63 83</p>
-                            <p>info@ormentekstil.com.tr</p>
+                            <p>Önder Mahallesi, Karpuzlu 1.Cadde No:89/A</p>
+                            <p>Altındağ/Ankara</p>
+                            <p>T: 0312 349 68 88 - 0312 349 68 89</p>
+                            <p>WhatsApp: 0540 349 68 88</p>
                         </div>
                     </div>
                 </div>
@@ -131,53 +131,25 @@
                 </div>
             </div>
 
-            <!-- Ürün Ekle -->
+            <!-- Ürün Giriş -->
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Ürün Ekle</h2>
-                    <div class="catalog-controls">
-                        <select id="cl-katalog" class="catalog-select">
-                            <option value="">Katalogdan Seç...</option>
-                        </select>
-                        <button class="btn btn-sm btn-ghost" id="cl-katalog-kaydet" title="Mevcut ürünü kataloğa kaydet">+ Kataloğa Kaydet</button>
-                    </div>
+                    <h2 class="card-title">Ürün Giriş</h2>
+                    <p class="card-subtitle">Her satıra: <strong>Ürün Kodu - Metre</strong> yazın. Aynı ürünler otomatik gruplanır.</p>
                 </div>
                 <div class="card-body">
-                    <div class="form-grid cols-4">
-                        <div class="form-group">
-                            <label>Ürün Adı</label>
-                            <input type="text" id="cl-urun" placeholder="Ör: ARIA">
-                        </div>
-                        <div class="form-group">
-                            <label>Renk</label>
-                            <input type="text" id="cl-renk" placeholder="Ör: Lacivert">
-                        </div>
-                        <div class="form-group">
-                            <label>Parti No</label>
-                            <input type="text" id="cl-parti" placeholder="Ör: P-001">
-                        </div>
-                        <div class="form-group">
-                            <label>Top Adedi</label>
-                            <input type="number" id="cl-top" placeholder="Ör: 5" step="1">
-                        </div>
+                    <div class="form-group">
+                        <label>Toplar (her satır = 1 top)</label>
+                        <textarea id="cl-ham-veri" class="textarea" rows="8" placeholder="Bentley 03 - 50 metre
+Bentley 03 - 52 metre
+Bentley 04 - 34 metre
+Madrid 15 - 60 metre
+Madrid 15 - 55 metre"></textarea>
                     </div>
-                    <div class="form-grid cols-4">
-                        <div class="form-group">
-                            <label>Metre/Kg</label>
-                            <input type="number" id="cl-metre" placeholder="Ör: 150" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label>Brüt Ağırlık (kg)</label>
-                            <input type="number" id="cl-brut" placeholder="Ör: 45" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label>Net Ağırlık (kg)</label>
-                            <input type="number" id="cl-net" placeholder="Ör: 40" step="0.01">
-                        </div>
-                        <div class="form-group form-group-btn">
-                            <button class="btn btn-primary" id="cl-ekle">+ Ürün Ekle</button>
-                        </div>
-                    </div>
+                    <button class="btn btn-primary btn-lg" id="cl-analiz" style="width:100%">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        Analiz Et &amp; Grupla
+                    </button>
                 </div>
             </div>
 
@@ -192,28 +164,22 @@
                         <thead>
                             <tr>
                                 <th class="col-no">NO</th>
-                                <th>ÜRÜN ADI</th>
-                                <th>RENK</th>
-                                <th>PARTİ NO</th>
+                                <th>ÜRÜN KODU</th>
+                                <th>METRE</th>
                                 <th>TOP</th>
-                                <th>METRE/KG</th>
-                                <th>BRÜT (kg)</th>
-                                <th>NET (kg)</th>
                                 <th class="col-action"></th>
                             </tr>
                         </thead>
                         <tbody id="cl-tbody">
                             <tr class="empty-row">
-                                <td colspan="9">Henüz ürün eklenmedi</td>
+                                <td colspan="5">Henüz ürün eklenmedi</td>
                             </tr>
                         </tbody>
                         <tfoot>
                             <tr class="total-row">
-                                <td colspan="4"><strong>TOPLAM</strong></td>
+                                <td colspan="2"><strong>TOPLAM</strong></td>
+                                <td id="cl-total-metre"><strong>0</strong></td>
                                 <td id="cl-total-top"><strong>0</strong></td>
-                                <td id="cl-total-metre"><strong>0.00</strong></td>
-                                <td id="cl-total-brut"><strong>0.00</strong></td>
-                                <td id="cl-total-net"><strong>0.00</strong></td>
                                 <td></td>
                             </tr>
                         </tfoot>
@@ -265,10 +231,9 @@
                                 </div>
                             </div>
                             <div class="doc-header-right">
-                                <p>A.Önder Mah. Karpuzlu 1.Cadde No:05/A 06105 Ankara</p>
-                                <p>T (0312) 345 63 83 - 85 | F (0312) 345 63 83</p>
-                                <p>info@ormentekstil.com.tr | www.ormentekstil.com.tr</p>
-                                <p>WhatsApp Sipariş Hattı: 0546 345 63 83</p>
+                                <p>Önder Mahallesi, Karpuzlu 1.Cadde No:89/A Altındağ/Ankara</p>
+                                <p>T: 0312 349 68 88 - 0312 349 68 89</p>
+                                <p>WhatsApp Sipariş Hattı: 0540 349 68 88</p>
                             </div>
                         </div>
 
@@ -285,8 +250,8 @@
                             <div class="doc-info-block">
                                 <p class="doc-info-label">GÖNDERİCİ</p>
                                 <p><strong>ORMEN TEKSTİL</strong></p>
-                                <p>A.Önder Mah. Karpuzlu 1.Cadde No:05/A, Ankara</p>
-                                <p>T: (0312) 345 63 83</p>
+                                <p>Önder Mah. Karpuzlu 1.Cadde No:89/A, Altındağ/Ankara</p>
+                                <p>T: 0312 349 68 88</p>
                             </div>
                             <div class="doc-info-block">
                                 <p class="doc-info-label">ALICI</p>
@@ -307,24 +272,18 @@
                             <thead>
                                 <tr>
                                     <th class="col-no">NO</th>
-                                    <th>ÜRÜN ADI</th>
-                                    <th>RENK</th>
-                                    <th>PARTİ</th>
+                                    <th>ÜRÜN KODU</th>
+                                    <th>METRE</th>
                                     <th>TOP</th>
-                                    <th>METRE/KG</th>
-                                    <th>BRÜT</th>
-                                    <th>NET</th>
                                 </tr>
                             </thead>
                             <tbody id="cl-doc-tbody">
                             </tbody>
                             <tfoot>
                                 <tr class="total-row">
-                                    <td colspan="4"><strong>TOPLAM</strong></td>
+                                    <td colspan="2"><strong>TOPLAM</strong></td>
+                                    <td id="cl-doc-total-metre"><strong>0</strong></td>
                                     <td id="cl-doc-total-top"><strong>0</strong></td>
-                                    <td id="cl-doc-total-metre"><strong>0.00</strong></td>
-                                    <td id="cl-doc-total-brut"><strong>0.00</strong></td>
-                                    <td id="cl-doc-total-net"><strong>0.00</strong></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -354,7 +313,7 @@
                         </div>
 
                         <div class="doc-footer">
-                            <p>ORMEN TEKSTİL &middot; www.ormentekstil.com.tr &middot; info@ormentekstil.com.tr &middot; (0312) 345 63 83</p>
+                            <p>ORMEN TEKSTİL &middot; 0312 349 68 88 &middot; WhatsApp: 0540 349 68 88</p>
                         </div>
                     </div>
                 </div>
@@ -458,14 +417,21 @@
                     </div>
                     <hr class="divider">
                     <h3 class="section-subtitle">Sipariş Kalemleri</h3>
-                    <div class="form-grid cols-3">
+                    <div class="form-grid cols-4">
                         <div class="form-group">
                             <label>Ürün Adı</label>
                             <input type="text" id="sm-urun" placeholder="Ör: Madrid 15">
                         </div>
                         <div class="form-group">
-                            <label>Top Adedi</label>
-                            <input type="number" id="sm-top" placeholder="Ör: 5" step="1">
+                            <label>Miktar</label>
+                            <input type="number" id="sm-miktar" placeholder="Ör: 5" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Birim</label>
+                            <select id="sm-birim">
+                                <option value="top">Top</option>
+                                <option value="metre">Metre</option>
+                            </select>
                         </div>
                         <div class="form-group form-group-btn">
                             <button class="btn btn-primary" id="sm-ekle">+ Ekle</button>

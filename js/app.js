@@ -96,7 +96,7 @@ function exportPDF(elementId, filename) {
 
 // === Çeki No Oluştur ===
 function generateCekiNo() {
-    var sayac = parseInt(localStorage.getItem('ceki_sayac') || '0') + 1;
+    var sayac = parseInt(localStorage.getItem('ceki_sayac') || '215') + 1;
     localStorage.setItem('ceki_sayac', sayac.toString());
     var yil = new Date().getFullYear();
     return 'CK-' + yil + '-' + String(sayac).padStart(3, '0');
