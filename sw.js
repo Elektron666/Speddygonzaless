@@ -1,5 +1,5 @@
 // ORMEN TEKSTİL - Service Worker v3
-var CACHE_NAME = 'ormen-v3';
+var CACHE_NAME = 'ormen-v6';
 var ASSETS = [
     '/',
     '/index.html',
@@ -7,7 +7,10 @@ var ASSETS = [
     '/js/app.js',
     '/js/ceki-listesi.js',
     '/js/aciklama-metni.js',
-    '/js/siparis-mail.js'
+    '/js/siparis-mail.js',
+    '/manifest.json',
+    '/assets/icon-192.png',
+    '/assets/icon-512.png'
 ];
 
 // Install — cache core assets

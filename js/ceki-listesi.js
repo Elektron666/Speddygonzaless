@@ -62,6 +62,7 @@
     var draft = loadDraft('ceki');
     if (draft) {
         cekiNoInput.value = draft.cekiNo || generateCekiNo();
+        if (draft.tarih) tarihInput.value = draft.tarih;
         if (draft.irsaliye) irsaliyeInput.value = draft.irsaliye;
         if (draft.plaka) plakaInput.value = draft.plaka;
         if (draft.sofor) soforInput.value = draft.sofor;
@@ -83,6 +84,7 @@
     function triggerAutoSave() {
         autoSave('ceki', {
             cekiNo: cekiNoInput.value,
+            tarih: tarihInput.value,
             irsaliye: irsaliyeInput.value,
             sevkTipi: sevkTipiSelect.value,
             plaka: plakaInput.value,

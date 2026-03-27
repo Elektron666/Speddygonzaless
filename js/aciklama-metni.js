@@ -86,9 +86,10 @@
         if (aciklamaInput.value.trim()) {
             text += aciklamaInput.value.trim() + '\n\n';
         }
-        text += '📞 (0312) 345 63 83\n';
-        text += '📱 0546 345 63 83 (WhatsApp)\n';
-        text += '🌐 www.ormentekstil.com.tr';
+        text += '📞 0312 349 68 88\n';
+        text += '📱 0540 349 68 88 (WhatsApp)\n';
+        text += '🌐 www.ormentekstil.com.tr\n';
+        text += '✉️ info@ormentekstil.com.tr';
 
         var encoded = encodeURIComponent(text);
         window.open('https://wa.me/?text=' + encoded, '_blank');
