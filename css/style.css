@@ -948,6 +948,74 @@ body {
     margin-left: 3px;
 }
 
+/* ===== ONAY MÜHÜRÜ ===== */
+.doc-stamp {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.stamp-circle {
+    width: 150px;
+    height: 150px;
+    border: 4px solid #c0392b;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #c0392b;
+    transform: rotate(-15deg);
+    position: relative;
+    box-shadow: inset 0 0 0 3px #c0392b, inset 0 0 0 5px transparent, inset 0 0 0 6px rgba(192,57,43,0.3);
+    opacity: 0.85;
+}
+
+.stamp-text-top {
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.stamp-main {
+    font-family: var(--font-logo);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin: 4px 0;
+    padding: 2px 0;
+    border-top: 2px solid #c0392b;
+    border-bottom: 2px solid #c0392b;
+}
+
+.stamp-date {
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 600;
+}
+
+/* Onay butonu */
+.btn-success {
+    background: #16a34a;
+    color: #fff;
+}
+.btn-success:hover {
+    background: #15803d;
+}
+
+/* Stamp animasyonu */
+@keyframes stampIn {
+    0% { transform: rotate(-15deg) scale(3); opacity: 0; }
+    60% { transform: rotate(-15deg) scale(0.9); opacity: 0.9; }
+    100% { transform: rotate(-15deg) scale(1); opacity: 0.85; }
+}
+
+.stamp-animate {
+    animation: stampIn 0.5s ease-out forwards;
+}
+
 /* ===== ANİMASYONLAR ===== */
 @keyframes slideIn {
     from { opacity: 0; transform: translateY(-8px); }

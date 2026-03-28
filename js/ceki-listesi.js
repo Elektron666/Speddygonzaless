@@ -45,6 +45,11 @@
     var temizleBtn = document.getElementById('cl-temizle');
     var whatsappBtn = document.getElementById('cl-whatsapp');
     var excelBtn = document.getElementById('cl-excel');
+    var onaylaBtn = document.getElementById('cl-onayla');
+    var whatsappGorselBtn = document.getElementById('cl-whatsapp-gorsel');
+    var stampEl = document.getElementById('cl-stamp');
+    var stampDateEl = document.getElementById('cl-stamp-date');
+    var isOnaylandi = false;
 
     // === Init ===
     var draft = loadDraft('ceki');
@@ -359,6 +364,80 @@
             'ORMEN_Ceki_' + (aliciInput.value.trim().replace(/\s+/g, '_') || 'Liste') + '_' + tarih + '.xlsx');
     });
 
+    // === Onayla & Mühürle ===
+    onaylaBtn.addEventListener('click', function() {
+        if (rolls.length === 0) { showToast('Önce verileri analiz edin.'); return; }
+        if (isOnaylandi) { showToast('Zaten onaylanmış.'); return; }
+
+        var now = new Date();
+        var dateStr = ('0' + now.getDate()).slice(-2) + '/' +
+                      ('0' + (now.getMonth() + 1)).slice(-2) + '/' +
+                      now.getFullYear() + ' ' +
+                      ('0' + now.getHours()).slice(-2) + ':' +
+                      ('0' + now.getMinutes()).slice(-2);
+
+        stampDateEl.textContent = dateStr;
+        stampEl.style.display = 'flex';
+
+        // Animasyon
+        var circle = stampEl.querySelector('.stamp-circle');
+        circle.classList.remove('stamp-animate');
+        void circle.offsetWidth; // reflow
+        circle.classList.add('stamp-animate');
+
+        isOnaylandi = true;
+        showToast('Belge onaylandı ve mühürlendi!');
+    });
+
+    // === WhatsApp Görsel Gönder ===
+    whatsappGorselBtn.addEventListener('click', function() {
+        if (rolls.length === 0) { showToast('Önce verileri analiz edin.'); return; }
+        if (!isOnaylandi) { showToast('Önce belgeyi onaylayın.'); return; }
+
+        var doc = document.getElementById('cl-document');
+        showToast('Görsel hazırlanıyor...');
+
+        html2canvas(doc, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            logging: false
+        }).then(function(canvas) {
+            canvas.toBlob(function(blob) {
+                var fileName = 'ORMEN_Ceki_' + cekiNoInput.value + '.png';
+
+                // Web Share API destekliyorsa (mobil)
+                if (navigator.share && navigator.canShare) {
+                    var file = new File([blob], fileName, { type: 'image/png' });
+                    var shareData = { files: [file] };
+
+                    if (navigator.canShare(shareData)) {
+                        navigator.share(shareData).then(function() {
+                            showToast('Paylaşıldı!');
+                        }).catch(function() {
+                            // Kullanıcı iptal etti veya hata — fallback
+                            downloadBlob(blob, fileName);
+                        });
+                        return;
+                    }
+                }
+
+                // Fallback: İndir
+                downloadBlob(blob, fileName);
+            }, 'image/png');
+        });
+    });
+
+    function downloadBlob(blob, fileName) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Görsel indirildi! WhatsApp\'tan paylaşabilirsiniz.');
+    }
+
     // === Temizle ===
     temizleBtn.addEventListener('click', function() {
         rolls = [];
@@ -372,6 +451,10 @@
         telefonInput.value = '';
         notlarTextarea.value = '';
         cekiNoInput.value = generateCekiNo();
+        isOnaylandi = false;
+        stampEl.style.display = 'none';
+        var circle = stampEl.querySelector('.stamp-circle');
+        circle.classList.remove('stamp-animate');
         clearDraft('ceki');
         updateDisplays();
         showToast('Liste temizlendi.');
