@@ -1,16 +1,15 @@
-// ===== ÇEKİ LİSTESİ MODÜLÜ v6 (Detay + Özet) =====
+// ===== ÇEKİ LİSTESİ MODÜLÜ v7 (Karma Top Desteği) =====
 
 (function() {
-    var toplar = [];  // her satır = 1 top: { kod: 'BENTLEY 03', metre: 50 }
-    var gruplar = []; // gruplanmış: { kod: 'BENTLEY 03', metre: 102, top: 2 }
+    // rolls = fiziksel toplar
+    // Her roll: { no, karma, items: [{ kod, metre }] }
+    var rolls = [];
 
     // Form
     var cekiNoInput = document.getElementById('cl-ceki-no');
     var tarihInput = document.getElementById('cl-tarih');
     var irsaliyeInput = document.getElementById('cl-irsaliye');
     var sevkTipiSelect = document.getElementById('cl-sevk-tipi');
-    var plakaInput = document.getElementById('cl-plaka');
-    var soforInput = document.getElementById('cl-sofor');
     var aliciInput = document.getElementById('cl-alici');
     var yetkiliInput = document.getElementById('cl-yetkili');
     var adresInput = document.getElementById('cl-adres');
@@ -20,16 +19,10 @@
     var analizBtn = document.getElementById('cl-analiz');
     var notlarTextarea = document.getElementById('cl-notlar');
 
-    // Detay tablo
+    // Tablo
     var tbody = document.getElementById('cl-tbody');
     var countBadge = document.getElementById('cl-count');
     var totalMetre = document.getElementById('cl-total-metre');
-
-    // Özet tablo
-    var ozetTbody = document.getElementById('cl-ozet-tbody');
-    var ozetCount = document.getElementById('cl-ozet-count');
-    var ozetTotalMetre = document.getElementById('cl-ozet-total-metre');
-    var ozetTotalTop = document.getElementById('cl-ozet-total-top');
 
     // Belge
     var cekiNoDisplay = document.getElementById('cl-ceki-no-display');
@@ -41,13 +34,8 @@
     var sehirDisplay = document.getElementById('cl-sehir-display');
     var telefonDisplay = document.getElementById('cl-telefon-display');
     var sevkDisplay = document.getElementById('cl-sevk-display');
-    var plakaDisplay = document.getElementById('cl-plaka-display');
-    var soforDisplay = document.getElementById('cl-sofor-display');
     var docTbody = document.getElementById('cl-doc-tbody');
     var docTotalMetre = document.getElementById('cl-doc-total-metre');
-    var docOzetTbody = document.getElementById('cl-doc-ozet-tbody');
-    var docOzetTotalMetre = document.getElementById('cl-doc-ozet-total-metre');
-    var docOzetTotalTop = document.getElementById('cl-doc-ozet-total-top');
     var docNotlar = document.getElementById('cl-doc-notlar');
     var docNotlarText = document.getElementById('cl-doc-notlar-text');
 
@@ -64,8 +52,6 @@
         cekiNoInput.value = draft.cekiNo || generateCekiNo();
         if (draft.tarih) tarihInput.value = draft.tarih;
         if (draft.irsaliye) irsaliyeInput.value = draft.irsaliye;
-        if (draft.plaka) plakaInput.value = draft.plaka;
-        if (draft.sofor) soforInput.value = draft.sofor;
         if (draft.sevkTipi) sevkTipiSelect.value = draft.sevkTipi;
         if (draft.alici) aliciInput.value = draft.alici;
         if (draft.yetkili) yetkiliInput.value = draft.yetkili;
@@ -74,8 +60,15 @@
         if (draft.telefon) telefonInput.value = draft.telefon;
         if (draft.notlar) notlarTextarea.value = draft.notlar;
         if (draft.hamVeri) hamVeriTextarea.value = draft.hamVeri;
-        if (draft.toplar && draft.toplar.length > 0) toplar = draft.toplar;
-        if (draft.gruplar && draft.gruplar.length > 0) gruplar = draft.gruplar;
+        // Yeni format
+        if (draft.rolls && draft.rolls.length > 0) {
+            rolls = draft.rolls;
+        // Eski format uyumluluk
+        } else if (draft.toplar && draft.toplar.length > 0) {
+            rolls = draft.toplar.map(function(t, i) {
+                return { no: i + 1, karma: false, items: [{ kod: t.kod, metre: t.metre }] };
+            });
+        }
     } else {
         cekiNoInput.value = generateCekiNo();
     }
@@ -87,8 +80,6 @@
             tarih: tarihInput.value,
             irsaliye: irsaliyeInput.value,
             sevkTipi: sevkTipiSelect.value,
-            plaka: plakaInput.value,
-            sofor: soforInput.value,
             alici: aliciInput.value,
             yetkili: yetkiliInput.value,
             adres: adresInput.value,
@@ -96,8 +87,7 @@
             telefon: telefonInput.value,
             notlar: notlarTextarea.value,
             hamVeri: hamVeriTextarea.value,
-            toplar: toplar,
-            gruplar: gruplar
+            rolls: rolls
         });
     }
 
@@ -112,8 +102,6 @@
         sehirDisplay.textContent = sehirInput.value || '';
         telefonDisplay.textContent = telefonInput.value ? 'T: ' + telefonInput.value : '';
         sevkDisplay.textContent = sevkTipiSelect.value;
-        plakaDisplay.textContent = plakaInput.value || '-';
-        soforDisplay.textContent = soforInput.value || '-';
 
         var notlar = notlarTextarea.value.trim();
         if (notlar) {
@@ -129,21 +117,35 @@
         triggerAutoSave();
     }
 
-    var allInputs = [tarihInput, irsaliyeInput, sevkTipiSelect, plakaInput, soforInput,
+    var allInputs = [cekiNoInput, tarihInput, irsaliyeInput, sevkTipiSelect,
                      aliciInput, yetkiliInput, adresInput, sehirInput, telefonInput, notlarTextarea, hamVeriTextarea];
     allInputs.forEach(function(el) {
         el.addEventListener('input', updateDisplays);
         el.addEventListener('change', updateDisplays);
     });
 
-    // === HAM VERİ PARSE ===
+    // === PARSER: Boş satır = yeni top, ardışık satırlar = aynı top (karma) ===
     function parseHamVeri(text) {
         var lines = text.split('\n');
-        var items = []; // her satır tek tek
+        var result = [];
+        var currentGroup = [];
+
+        function commitGroup() {
+            if (currentGroup.length === 0) return;
+            result.push({
+                no: result.length + 1,
+                karma: currentGroup.length > 1,
+                items: currentGroup.slice()
+            });
+            currentGroup = [];
+        }
 
         lines.forEach(function(line) {
             line = line.trim();
-            if (!line) return;
+            if (!line) {
+                commitGroup();
+                return;
+            }
 
             var parts = line.split(/\s*-\s*/);
             if (parts.length < 2) return;
@@ -153,34 +155,10 @@
             var metre = parseFloat(metreStr.replace(',', '.')) || 0;
 
             if (!kod) return;
-            items.push({ kod: kod, metre: metre });
+            currentGroup.push({ kod: kod, metre: metre });
         });
+        commitGroup(); // son grubu kapat
 
-        return items;
-    }
-
-    // Toplardan grup oluştur
-    function grupla(items) {
-        var map = {};
-        var order = [];
-
-        items.forEach(function(t) {
-            if (!map[t.kod]) {
-                map[t.kod] = { metre: 0, top: 0 };
-                order.push(t.kod);
-            }
-            map[t.kod].metre += t.metre;
-            map[t.kod].top += 1;
-        });
-
-        var result = [];
-        order.forEach(function(kod) {
-            result.push({
-                kod: kod,
-                metre: Math.round(map[kod].metre * 100) / 100,
-                top: map[kod].top
-            });
-        });
         return result;
     }
 
@@ -193,122 +171,121 @@
             return;
         }
 
-        toplar = parseHamVeri(text);
-        if (toplar.length === 0) {
+        rolls = parseHamVeri(text);
+        if (rolls.length === 0) {
             showToast('Veri okunamadı. Format: Ürün Kodu - Metre');
             return;
         }
 
-        gruplar = grupla(toplar);
-        renderAll();
+        var karmaCount = rolls.filter(function(r) { return r.karma; }).length;
+        renderTable();
         triggerAutoSave();
-        showToast(toplar.length + ' top, ' + gruplar.length + ' ürün listelendi!');
+        var msg = rolls.length + ' top listelendi';
+        if (karmaCount > 0) msg += ' (' + karmaCount + ' karma)';
+        showToast(msg + '!');
     });
 
-    // === RENDER ===
-    function renderAll() {
-        renderDetay();
-        renderOzet();
-    }
-
-    // Detay: her top tek tek, checkbox ile
-    function renderDetay() {
+    // === TABLO RENDER ===
+    function renderTable() {
         tbody.innerHTML = '';
         docTbody.innerHTML = '';
         var sumMetre = 0;
 
-        if (toplar.length === 0) {
-            tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Henüz ürün eklenmedi</td></tr>';
+        if (rolls.length === 0) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Henüz ürün eklenmedi</td></tr>';
+            totalMetre.innerHTML = '<strong>0</strong>';
+            docTotalMetre.innerHTML = '<strong>0</strong>';
+            countBadge.textContent = '0 top';
+            return;
         }
 
-        toplar.forEach(function(t, i) {
-            sumMetre += t.metre;
+        rolls.forEach(function(roll) {
+            var rollMetre = 0;
+            roll.items.forEach(function(item) { rollMetre += item.metre; });
+            sumMetre += rollMetre;
 
-            // UI satır
-            var tr = document.createElement('tr');
-            tr.style.animation = 'slideIn 0.2s ease';
-            tr.innerHTML =
-                '<td class="col-check"><input type="checkbox" class="top-check" data-index="' + i + '"></td>' +
-                '<td>' + (i + 1) + '</td>' +
-                '<td><strong>' + t.kod + '</strong></td>' +
-                '<td>' + t.metre + ' mt</td>' +
-                '<td class="col-action"><button class="delete-btn" data-index="' + i + '">&times;</button></td>';
-            tbody.appendChild(tr);
+            roll.items.forEach(function(item, idx) {
+                var isFirst = (idx === 0);
+                var isLast = (idx === roll.items.length - 1);
+                var itemCount = roll.items.length;
 
-            // Belge satır (kutucuk ile)
-            var docTr = document.createElement('tr');
-            docTr.innerHTML =
-                '<td class="col-check-doc"><span class="check-box"></span></td>' +
-                '<td>' + (i + 1) + '</td>' +
-                '<td>' + t.kod + '</td>' +
-                '<td>' + t.metre + '</td>';
-            docTbody.appendChild(docTr);
+                // === UI Tablo ===
+                var tr = document.createElement('tr');
+                if (roll.karma) {
+                    tr.classList.add('karma-row');
+                    if (isFirst) tr.classList.add('karma-first');
+                    if (isLast) tr.classList.add('karma-last');
+                }
+
+                var noCell = '';
+                if (isFirst) {
+                    var badge = roll.karma ? ' <span class="karma-badge">KARMA</span>' : '';
+                    if (roll.karma) {
+                        noCell = '<td class="col-no" rowspan="' + itemCount + '">' + roll.no + badge + '</td>';
+                    } else {
+                        noCell = '<td class="col-no">' + roll.no + '</td>';
+                    }
+                }
+
+                var deleteCell = '';
+                if (isFirst) {
+                    if (roll.karma) {
+                        deleteCell = '<td class="col-action" rowspan="' + itemCount + '"><button class="delete-btn" data-roll="' + (roll.no - 1) + '">&times;</button></td>';
+                    } else {
+                        deleteCell = '<td class="col-action"><button class="delete-btn" data-roll="' + (roll.no - 1) + '">&times;</button></td>';
+                    }
+                }
+
+                tr.innerHTML = noCell +
+                    '<td><strong>' + item.kod + '</strong></td>' +
+                    '<td>' + item.metre + ' mt</td>' +
+                    deleteCell;
+                tbody.appendChild(tr);
+
+                // === Belge Tablo ===
+                var docTr = document.createElement('tr');
+                if (roll.karma) {
+                    docTr.classList.add('doc-karma-row');
+                    if (isFirst) docTr.classList.add('doc-karma-first');
+                    if (isLast) docTr.classList.add('doc-karma-last');
+                }
+
+                var docNoCell = '';
+                if (isFirst) {
+                    var docBadge = roll.karma ? '<span class="doc-karma-badge">K</span>' : '';
+                    if (roll.karma) {
+                        docNoCell = '<td class="col-no" rowspan="' + itemCount + '">' + roll.no + docBadge + '</td>';
+                    } else {
+                        docNoCell = '<td class="col-no">' + roll.no + '</td>';
+                    }
+                }
+
+                docTr.innerHTML = docNoCell +
+                    '<td>' + item.kod + '</td>' +
+                    '<td>' + item.metre + '</td>';
+                docTbody.appendChild(docTr);
+            });
         });
 
-        totalMetre.innerHTML = '<strong>' + sumMetre + '</strong>';
-        docTotalMetre.innerHTML = '<strong>' + sumMetre + '</strong>';
-        countBadge.textContent = toplar.length + ' top';
+        totalMetre.innerHTML = '<strong>' + Math.round(sumMetre * 100) / 100 + '</strong>';
+        docTotalMetre.innerHTML = '<strong>' + Math.round(sumMetre * 100) / 100 + '</strong>';
+        countBadge.textContent = rolls.length + ' top';
 
         // Sil butonları
         tbody.querySelectorAll('.delete-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
-                toplar.splice(parseInt(this.dataset.index), 1);
-                gruplar = grupla(toplar);
-                renderAll();
+                var idx = parseInt(this.dataset.roll);
+                rolls.splice(idx, 1);
+                rolls.forEach(function(r, i) { r.no = i + 1; });
+                renderTable();
                 triggerAutoSave();
             });
         });
-
-        // Checkbox - satırı işaretle
-        tbody.querySelectorAll('.top-check').forEach(function(cb) {
-            cb.addEventListener('change', function() {
-                var row = this.closest('tr');
-                if (this.checked) {
-                    row.classList.add('checked-row');
-                } else {
-                    row.classList.remove('checked-row');
-                }
-            });
-        });
-    }
-
-    // Özet: gruplanmış
-    function renderOzet() {
-        ozetTbody.innerHTML = '';
-        docOzetTbody.innerHTML = '';
-        var sumMetre = 0, sumTop = 0;
-
-        gruplar.forEach(function(g, i) {
-            sumMetre += g.metre;
-            sumTop += g.top;
-
-            var tr = document.createElement('tr');
-            tr.innerHTML =
-                '<td>' + (i + 1) + '</td>' +
-                '<td><strong>' + g.kod + '</strong></td>' +
-                '<td>' + g.metre + ' mt</td>' +
-                '<td>' + g.top + '</td>';
-            ozetTbody.appendChild(tr);
-
-            var docTr = document.createElement('tr');
-            docTr.innerHTML =
-                '<td>' + g.kod + '</td>' +
-                '<td>' + g.metre + '</td>' +
-                '<td>' + g.top + '</td>';
-            docOzetTbody.appendChild(docTr);
-        });
-
-        ozetTotalMetre.innerHTML = '<strong>' + sumMetre + '</strong>';
-        ozetTotalTop.innerHTML = '<strong>' + sumTop + '</strong>';
-        ozetCount.textContent = gruplar.length + ' kalem';
-
-        docOzetTotalMetre.innerHTML = '<strong>' + sumMetre + '</strong>';
-        docOzetTotalTop.innerHTML = '<strong>' + sumTop + '</strong>';
     }
 
     // === PDF ===
     pdfBtn.addEventListener('click', function() {
-        if (toplar.length === 0) { showToast('Önce verileri analiz edin.'); return; }
+        if (rolls.length === 0) { showToast('Önce verileri analiz edin.'); return; }
         var tarih = formatDate(tarihInput.value).replace(/\//g, '-');
         var alici = aliciInput.value.trim().replace(/\s+/g, '_') || 'Ceki';
         exportPDF('cl-document', 'ORMEN_Ceki_' + alici + '_' + tarih + '.pdf');
@@ -316,36 +293,38 @@
 
     // === Yazdır ===
     yazdirBtn.addEventListener('click', function() {
-        if (toplar.length === 0) { showToast('Önce verileri analiz edin.'); return; }
+        if (rolls.length === 0) { showToast('Önce verileri analiz edin.'); return; }
         window.print();
     });
 
     // === WhatsApp ===
     whatsappBtn.addEventListener('click', function() {
-        if (toplar.length === 0) { showToast('Önce verileri analiz edin.'); return; }
+        if (rolls.length === 0) { showToast('Önce verileri analiz edin.'); return; }
 
-        var text = '*ORMEN TEKSTİL - Çeki Özeti*\n';
+        var text = '*ORMEN TEKSTİL - Çeki Listesi*\n';
         text += '━━━━━━━━━━━━━━━━━━━━\n';
         text += 'Çeki No: ' + cekiNoInput.value + '\n';
         text += 'Tarih: ' + formatDate(tarihInput.value) + '\n';
         if (aliciInput.value) text += 'Alıcı: *' + aliciInput.value + '*\n';
         text += '━━━━━━━━━━━━━━━━━━━━\n\n';
 
-        text += '*DETAY:*\n';
-        toplar.forEach(function(t, i) {
-            text += (i + 1) + '. ' + t.kod + ' - ' + t.metre + ' mt\n';
-        });
-
-        text += '\n*ÖZET:*\n';
-        var sumMetre = 0, sumTop = 0;
-        gruplar.forEach(function(g) {
-            text += '📦 ' + g.kod + ' - ' + g.metre + ' mt (' + g.top + ' top)\n';
-            sumMetre += g.metre;
-            sumTop += g.top;
+        var sumMetre = 0;
+        rolls.forEach(function(roll) {
+            if (roll.karma) {
+                text += roll.no + '. *KARMA TOP:*\n';
+                roll.items.forEach(function(item) {
+                    text += '   • ' + item.kod + ' - ' + item.metre + ' mt\n';
+                    sumMetre += item.metre;
+                });
+            } else {
+                var item = roll.items[0];
+                text += roll.no + '. ' + item.kod + ' - ' + item.metre + ' mt\n';
+                sumMetre += item.metre;
+            }
         });
 
         text += '\n━━━━━━━━━━━━━━━━━━━━\n';
-        text += '*TOPLAM: ' + sumMetre + ' metre (' + sumTop + ' top)*\n';
+        text += '*TOPLAM: ' + Math.round(sumMetre * 100) / 100 + ' metre (' + rolls.length + ' top)*\n';
         text += '━━━━━━━━━━━━━━━━━━━━\n';
         text += 'ORMEN TEKSTİL | 0312 349 68 88';
 
@@ -354,33 +333,26 @@
 
     // === Excel ===
     excelBtn.addEventListener('click', function() {
-        if (toplar.length === 0) { showToast('Önce verileri analiz edin.'); return; }
+        if (rolls.length === 0) { showToast('Önce verileri analiz edin.'); return; }
 
         var meta = [
             ['ORMEN TEKSTİL - ÇEKİ LİSTESİ'],
             ['Çeki No: ' + cekiNoInput.value, '', 'Tarih: ' + formatDate(tarihInput.value)],
             ['Alıcı: ' + (aliciInput.value || '-'), '', 'İrsaliye: ' + (irsaliyeInput.value || '-')],
             [],
-            ['TOP DETAY'],
-            ['NO', 'ÜRÜN KODU', 'METRE']
+            ['NO', 'ÜRÜN KODU', 'METRE', 'NOT']
         ];
 
         var sumMetre = 0;
-        toplar.forEach(function(t, i) {
-            meta.push([i + 1, t.kod, t.metre]);
-            sumMetre += t.metre;
+        rolls.forEach(function(roll) {
+            roll.items.forEach(function(item, idx) {
+                var no = (idx === 0) ? roll.no : '';
+                var not = (idx === 0 && roll.karma) ? 'KARMA TOP' : '';
+                meta.push([no, item.kod, item.metre, not]);
+                sumMetre += item.metre;
+            });
         });
-        meta.push(['', 'TOPLAM', sumMetre]);
-        meta.push([]);
-        meta.push(['ÖZET']);
-        meta.push(['ÜRÜN KODU', 'TOPLAM METRE', 'TOP SAYISI']);
-
-        var sumTop = 0;
-        gruplar.forEach(function(g) {
-            meta.push([g.kod, g.metre, g.top]);
-            sumTop += g.top;
-        });
-        meta.push(['GENEL TOPLAM', sumMetre, sumTop]);
+        meta.push(['', 'TOPLAM', Math.round(sumMetre * 100) / 100, rolls.length + ' TOP']);
 
         var tarih = formatDate(tarihInput.value).replace(/\//g, '-');
         exportExcel(meta,
@@ -389,13 +361,10 @@
 
     // === Temizle ===
     temizleBtn.addEventListener('click', function() {
-        toplar = [];
-        gruplar = [];
-        renderAll();
+        rolls = [];
+        renderTable();
         hamVeriTextarea.value = '';
         irsaliyeInput.value = '';
-        plakaInput.value = '';
-        soforInput.value = '';
         aliciInput.value = '';
         yetkiliInput.value = '';
         adresInput.value = '';
@@ -411,6 +380,6 @@
     // İlk render
     setTimeout(function() {
         updateDisplays();
-        renderAll();
+        renderTable();
     }, 100);
 })();
