@@ -49,6 +49,7 @@
     var whatsappGorselBtn = document.getElementById('cl-whatsapp-gorsel');
     var stampEl = document.getElementById('cl-stamp');
     var stampDateEl = document.getElementById('cl-stamp-date');
+    var stampCekiEl = document.getElementById('cl-stamp-ceki');
     var isOnaylandi = false;
 
     // === Init ===
@@ -377,13 +378,14 @@
                       ('0' + now.getMinutes()).slice(-2);
 
         stampDateEl.textContent = dateStr;
+        stampCekiEl.textContent = cekiNoInput.value;
         stampEl.style.display = 'flex';
 
         // Animasyon
-        var circle = stampEl.querySelector('.stamp-circle');
-        circle.classList.remove('stamp-animate');
-        void circle.offsetWidth; // reflow
-        circle.classList.add('stamp-animate');
+        var passport = stampEl.querySelector('.stamp-passport');
+        passport.classList.remove('stamp-animate');
+        void passport.offsetWidth; // reflow
+        passport.classList.add('stamp-animate');
 
         isOnaylandi = true;
         showToast('Belge onaylandı ve mühürlendi!');
@@ -453,8 +455,8 @@
         cekiNoInput.value = generateCekiNo();
         isOnaylandi = false;
         stampEl.style.display = 'none';
-        var circle = stampEl.querySelector('.stamp-circle');
-        circle.classList.remove('stamp-animate');
+        var passport = stampEl.querySelector('.stamp-passport');
+        passport.classList.remove('stamp-animate');
         clearDraft('ceki');
         updateDisplays();
         showToast('Liste temizlendi.');

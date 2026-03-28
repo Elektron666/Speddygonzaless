@@ -948,52 +948,98 @@ body {
     margin-left: 3px;
 }
 
-/* ===== ONAY MÜHÜRÜ ===== */
+/* ===== ONAY MÜHÜRÜ — PASAPORT DAMGASI ===== */
 .doc-stamp {
     display: flex;
     justify-content: center;
-    margin: 20px 0;
+    margin: 24px 0;
 }
 
-.stamp-circle {
-    width: 150px;
-    height: 150px;
-    border: 4px solid #c0392b;
-    border-radius: 50%;
+.stamp-passport {
+    transform: rotate(-12deg);
+    opacity: 0.75;
+    color: #8b1a1a;
+    filter: saturate(0.85) contrast(1.1);
+}
+
+.stamp-border-outer {
+    border: 4px solid #8b1a1a;
+    border-radius: 10px;
+    padding: 5px;
+    position: relative;
+}
+
+.stamp-border-inner {
+    border: 2px solid #8b1a1a;
+    border-radius: 6px;
+    padding: 14px 28px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    color: #c0392b;
-    transform: rotate(-15deg);
-    position: relative;
-    box-shadow: inset 0 0 0 3px #c0392b, inset 0 0 0 5px transparent, inset 0 0 0 6px rgba(192,57,43,0.3);
-    opacity: 0.85;
+    gap: 4px;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(139,26,26,0.03) 3px,
+        rgba(139,26,26,0.03) 4px
+    );
 }
 
-.stamp-text-top {
+.stamp-curved-top {
     font-family: var(--font-body);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 2px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 4px;
     text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.stamp-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
 }
 
 .stamp-main {
     font-family: var(--font-logo);
-    font-size: 22px;
+    font-size: 30px;
     font-weight: 800;
-    letter-spacing: 2px;
-    margin: 4px 0;
-    padding: 2px 0;
-    border-top: 2px solid #c0392b;
-    border-bottom: 2px solid #c0392b;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    text-shadow: 1px 1px 0 rgba(139,26,26,0.2);
+}
+
+.stamp-divider {
+    width: 100%;
+    height: 2px;
+    background: #8b1a1a;
+    margin: 2px 0;
 }
 
 .stamp-date {
     font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.stamp-ceki-no {
+    font-family: var(--font-body);
     font-size: 10px;
     font-weight: 600;
+    letter-spacing: 3px;
+    opacity: 0.9;
+}
+
+.stamp-curved-bottom {
+    font-family: var(--font-body);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    margin-top: 2px;
 }
 
 /* Onay butonu */
@@ -1005,15 +1051,17 @@ body {
     background: #15803d;
 }
 
-/* Stamp animasyonu */
-@keyframes stampIn {
-    0% { transform: rotate(-15deg) scale(3); opacity: 0; }
-    60% { transform: rotate(-15deg) scale(0.9); opacity: 0.9; }
-    100% { transform: rotate(-15deg) scale(1); opacity: 0.85; }
+/* Pasaport damga animasyonu — vurma efekti */
+@keyframes passportStamp {
+    0% { transform: rotate(-12deg) scale(2.5); opacity: 0; }
+    45% { transform: rotate(-12deg) scale(0.92); opacity: 0.8; }
+    65% { transform: rotate(-12deg) scale(1.04); opacity: 0.78; }
+    80% { transform: rotate(-12deg) scale(0.98); opacity: 0.76; }
+    100% { transform: rotate(-12deg) scale(1); opacity: 0.75; }
 }
 
 .stamp-animate {
-    animation: stampIn 0.5s ease-out forwards;
+    animation: passportStamp 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 }
 
 /* ===== ANİMASYONLAR ===== */
