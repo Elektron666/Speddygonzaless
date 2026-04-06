@@ -629,10 +629,6 @@ body {
     width: 180px;
 }
 
-.signature-block-eden {
-    position: relative;
-}
-
 .signature-line {
     border-bottom: 1px solid #000;
     margin-bottom: 6px;
@@ -971,125 +967,6 @@ body {
     padding: 1px 4px;
     border-radius: 2px;
     margin-left: 3px;
-}
-
-/* ===== ONAY MÜHÜRÜ — PASAPORT DAMGASI ===== */
-.doc-stamp {
-    position: absolute;
-    top: -30px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-}
-
-.stamp-passport {
-    transform: rotate(-12deg) scale(0.75);
-    transform-origin: center center;
-    opacity: 0.75;
-    color: #8b1a1a;
-    filter: saturate(0.85) contrast(1.1);
-}
-
-.stamp-border-outer {
-    border: 4px solid #8b1a1a;
-    border-radius: 10px;
-    padding: 5px;
-    position: relative;
-}
-
-.stamp-border-inner {
-    border: 2px solid #8b1a1a;
-    border-radius: 6px;
-    padding: 14px 28px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 3px,
-        rgba(139,26,26,0.03) 3px,
-        rgba(139,26,26,0.03) 4px
-    );
-}
-
-.stamp-curved-top {
-    font-family: var(--font-body);
-    font-size: 9px;
-    font-weight: 800;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    white-space: nowrap;
-}
-
-.stamp-center {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-}
-
-.stamp-main {
-    font-family: var(--font-logo);
-    font-size: 30px;
-    font-weight: 800;
-    letter-spacing: 5px;
-    text-transform: uppercase;
-    text-shadow: 1px 1px 0 rgba(139,26,26,0.2);
-}
-
-.stamp-divider {
-    width: 100%;
-    height: 2px;
-    background: #8b1a1a;
-    margin: 2px 0;
-}
-
-.stamp-date {
-    font-family: var(--font-body);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 2px;
-}
-
-.stamp-ceki-no {
-    font-family: var(--font-body);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 3px;
-    opacity: 0.9;
-}
-
-.stamp-curved-bottom {
-    font-family: var(--font-body);
-    font-size: 8px;
-    font-weight: 700;
-    letter-spacing: 5px;
-    text-transform: uppercase;
-    margin-top: 2px;
-}
-
-/* Onay butonu */
-.btn-success {
-    background: #16a34a;
-    color: #fff;
-}
-.btn-success:hover {
-    background: #15803d;
-}
-
-/* Pasaport damga animasyonu — vurma efekti */
-@keyframes passportStamp {
-    0% { transform: rotate(-12deg) scale(1.9); opacity: 0; }
-    45% { transform: rotate(-12deg) scale(0.7); opacity: 0.8; }
-    65% { transform: rotate(-12deg) scale(0.78); opacity: 0.78; }
-    80% { transform: rotate(-12deg) scale(0.74); opacity: 0.76; }
-    100% { transform: rotate(-12deg) scale(0.75); opacity: 0.75; }
-}
-
-.stamp-animate {
-    animation: passportStamp 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 }
 
 /* ===== ANİMASYONLAR ===== */
