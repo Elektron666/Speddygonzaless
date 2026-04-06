@@ -38,6 +38,8 @@
     var docTotalMetre = document.getElementById('cl-doc-total-metre');
     var docNotlar = document.getElementById('cl-doc-notlar');
     var docNotlarText = document.getElementById('cl-doc-notlar-text');
+    var docSummary = document.getElementById('cl-doc-summary');
+    var docSummaryItems = document.getElementById('cl-doc-summary-items');
 
     // Butonlar
     var pdfBtn = document.getElementById('cl-pdf');
@@ -276,6 +278,23 @@
         totalMetre.innerHTML = '<strong>' + Math.round(sumMetre * 100) / 100 + '</strong>';
         docTotalMetre.innerHTML = '<strong>' + Math.round(sumMetre * 100) / 100 + '</strong>';
         countBadge.textContent = rolls.length + ' top';
+
+        // Ürün özeti (ürün kodu → top sayısı)
+        var kodTopMap = {};
+        rolls.forEach(function(roll) {
+            if (roll.karma) return; // karma toplar tek ürün değil, özete ekleme
+            var kod = roll.items[0].kod;
+            kodTopMap[kod] = (kodTopMap[kod] || 0) + 1;
+        });
+        var kodKeys = Object.keys(kodTopMap);
+        if (kodKeys.length > 0) {
+            docSummary.style.display = 'block';
+            docSummaryItems.innerHTML = kodKeys.map(function(kod) {
+                return '<span class="doc-summary-item">' + kod + ' <span>- ' + kodTopMap[kod] + ' Top</span></span>';
+            }).join('');
+        } else {
+            docSummary.style.display = 'none';
+        }
 
         // Sil butonları
         tbody.querySelectorAll('.delete-btn').forEach(function(btn) {
