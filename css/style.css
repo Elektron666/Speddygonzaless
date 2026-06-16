@@ -621,54 +621,6 @@ body {
     line-height: 1.6;
 }
 
-/* Ürün Özeti */
-.doc-summary {
-    margin-top: 14px;
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background: #fafafa;
-}
-
-.doc-summary::before {
-    content: "ÜRÜN ÖZETİ";
-    display: block;
-    font-size: 8px;
-    font-weight: 800;
-    color: #999;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
-}
-
-#cl-doc-summary-items {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 10px;
-}
-
-.doc-summary-item {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-    font-size: 9px;
-    padding: 3px 8px;
-    background: #fff;
-    border: 1px solid #e5e5e5;
-    border-radius: 3px;
-}
-
-.doc-summary-item .dsi-kod {
-    font-weight: 800;
-    color: #000;
-    letter-spacing: 0.5px;
-}
-
-.doc-summary-item .dsi-val {
-    font-weight: 500;
-    color: #666;
-}
-
 /* İmza */
 .doc-signatures {
     display: flex;

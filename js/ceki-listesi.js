@@ -39,8 +39,6 @@
     var docTotalLabel = document.getElementById('cl-doc-total-label');
     var docNotlar = document.getElementById('cl-doc-notlar');
     var docNotlarText = document.getElementById('cl-doc-notlar-text');
-    var docSummary = document.getElementById('cl-doc-summary');
-    var docSummaryItems = document.getElementById('cl-doc-summary-items');
 
     // Butonlar
     var pdfBtn = document.getElementById('cl-pdf');
@@ -227,7 +225,6 @@
             docTotalMetre.innerHTML = '<strong>0</strong>';
             countBadge.textContent = '0 top';
             if (docTotalLabel) docTotalLabel.innerHTML = '<strong>TOPLAM</strong>';
-            if (docSummary) docSummary.style.display = 'none';
             return;
         }
 
@@ -282,7 +279,7 @@
                 var docNoCell = '';
                 if (isFirst) {
                     var docBadge = roll.karma
-                        ? '<span class="doc-karma-badge">K</span><span class="doc-karma-sub">' + rollMetreR + '</span>'
+                        ? '<span class="doc-karma-badge">K</span><span class="doc-karma-sub">' + rollMetreR + ' mt</span>'
                         : '';
                     var docRowspan = roll.karma ? ' rowspan="' + itemCount + '"' : '';
                     docNoCell = '<td class="col-no"' + docRowspan + '>' + roll.no + docBadge + '</td>';
@@ -290,40 +287,19 @@
 
                 docTr.innerHTML = docNoCell +
                     '<td>' + item.kod + '</td>' +
-                    '<td class="col-metre">' + item.metre + '</td>';
+                    '<td class="col-metre">' + item.metre + ' mt</td>';
                 docTbody.appendChild(docTr);
             });
         });
 
         var sumMetreR = Math.round(sumMetre * 100) / 100;
         totalMetre.innerHTML = '<strong>' + sumMetreR + ' mt</strong>';
-        docTotalMetre.innerHTML = '<strong>' + sumMetreR + '</strong>';
+        docTotalMetre.innerHTML = '<strong>' + sumMetreR + ' mt</strong>';
         countBadge.textContent = rolls.length + ' top';
 
         // Belge TOPLAM satırına top sayısını yaz
         if (docTotalLabel) {
             docTotalLabel.innerHTML = '<strong>TOPLAM (' + rolls.length + ' TOP)</strong>';
-        }
-
-        // Ürün özeti (ürün kodu → top sayısı + toplam metre)
-        var kodMap = {};
-        var kodOrder = [];
-        rolls.forEach(function(roll) {
-            if (roll.karma) return; // karma toplar tek ürün değil, özete ekleme
-            var kod = roll.items[0].kod;
-            if (!kodMap[kod]) { kodMap[kod] = { top: 0, metre: 0 }; kodOrder.push(kod); }
-            kodMap[kod].top += 1;
-            kodMap[kod].metre += roll.items[0].metre;
-        });
-        if (kodOrder.length > 0) {
-            docSummary.style.display = 'block';
-            docSummaryItems.innerHTML = kodOrder.map(function(kod) {
-                var m = Math.round(kodMap[kod].metre * 100) / 100;
-                return '<div class="doc-summary-item"><span class="dsi-kod">' + kod + '</span>' +
-                       '<span class="dsi-val">' + kodMap[kod].top + ' Top &middot; ' + m + ' mt</span></div>';
-            }).join('');
-        } else {
-            docSummary.style.display = 'none';
         }
 
         // Sil butonları
