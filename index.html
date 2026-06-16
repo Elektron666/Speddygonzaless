@@ -124,7 +124,7 @@
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">Ürün Giriş</h2>
-                    <p class="card-subtitle">Her satır = <strong>Ürün Kodu - Metre</strong>. Alt alta yazılan ürünler aynı topa aittir. Boş satır yeni top başlatır.</p>
+                    <p class="card-subtitle">Her satır = <strong>Ürün Kodu - Metre</strong>. Alt alta yazılan ürünler aynı topa aittir, boş satır yeni top başlatır. Yazdıkça liste otomatik güncellenir; tablodaki metreye tıklayıp düzeltebilirsiniz.</p>
                 </div>
                 <div class="card-body">
                     <div class="form-group">
@@ -157,7 +157,7 @@ Madrid 15 - 60 metre"></textarea>
                             <tr>
                                 <th class="col-no">NO</th>
                                 <th>ÜRÜN KODU</th>
-                                <th>METRE</th>
+                                <th class="col-metre">METRE</th>
                                 <th class="col-action"></th>
                             </tr>
                         </thead>
@@ -169,7 +169,7 @@ Madrid 15 - 60 metre"></textarea>
                         <tfoot>
                             <tr class="total-row">
                                 <td colspan="2"><strong>TOPLAM</strong></td>
-                                <td id="cl-total-metre"><strong>0</strong></td>
+                                <td id="cl-total-metre" class="col-metre"><strong>0</strong></td>
                                 <td></td>
                             </tr>
                         </tfoot>
@@ -262,15 +262,15 @@ Madrid 15 - 60 metre"></textarea>
                                 <tr>
                                     <th class="col-no">NO</th>
                                     <th>ÜRÜN KODU</th>
-                                    <th>METRE</th>
+                                    <th class="col-metre">METRE</th>
                                 </tr>
                             </thead>
                             <tbody id="cl-doc-tbody">
                             </tbody>
                             <tfoot>
                                 <tr class="total-row">
-                                    <td colspan="2"><strong>TOPLAM</strong></td>
-                                    <td id="cl-doc-total-metre"><strong>0</strong></td>
+                                    <td colspan="2" id="cl-doc-total-label"><strong>TOPLAM</strong></td>
+                                    <td id="cl-doc-total-metre" class="col-metre"><strong>0</strong></td>
                                 </tr>
                             </tfoot>
                         </table>

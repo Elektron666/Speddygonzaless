@@ -36,6 +36,7 @@
     var sevkDisplay = document.getElementById('cl-sevk-display');
     var docTbody = document.getElementById('cl-doc-tbody');
     var docTotalMetre = document.getElementById('cl-doc-total-metre');
+    var docTotalLabel = document.getElementById('cl-doc-total-label');
     var docNotlar = document.getElementById('cl-doc-notlar');
     var docNotlarText = document.getElementById('cl-doc-notlar-text');
     var docSummary = document.getElementById('cl-doc-summary');
@@ -127,6 +128,7 @@
     });
 
     // === PARSER: Boş satır = yeni top, ardışık satırlar = aynı top (karma) ===
+    // Ayraç: - – = ; tab (virgül ondalık ayıracı olduğu için kullanılmaz)
     function parseHamVeri(text) {
         var lines = text.split('\n');
         var result = [];
@@ -149,11 +151,11 @@
                 return;
             }
 
-            var parts = line.split(/\s*-\s*/);
+            var parts = line.split(/\s*[-–=;\t]\s*/);
             if (parts.length < 2) return;
 
             var kod = parts[0].trim().toUpperCase();
-            var metreStr = parts.slice(1).join('-').trim().replace(/[^0-9.,]/g, '');
+            var metreStr = parts.slice(1).join(' ').trim().replace(/[^0-9.,]/g, '');
             var metre = parseFloat(metreStr.replace(',', '.')) || 0;
 
             if (!kod) return;
@@ -164,27 +166,53 @@
         return result;
     }
 
-    // Analiz Et
-    analizBtn.addEventListener('click', function() {
+    // rolls → textarea metni (satır içi düzenleme sonrası senkron için)
+    function rollsToText() {
+        return rolls.map(function(roll) {
+            return roll.items.map(function(it) {
+                return it.kod + ' - ' + it.metre + ' metre';
+            }).join('\n');
+        }).join('\n\n');
+    }
+
+    // Analiz işlemi (buton + canlı analiz ortak kullanır)
+    function runAnaliz(silent) {
         var text = hamVeriTextarea.value.trim();
         if (!text) {
-            showToast('Lütfen ürün verisi girin.');
-            hamVeriTextarea.focus();
+            rolls = [];
+            renderTable();
+            triggerAutoSave();
+            if (!silent) {
+                showToast('Lütfen ürün verisi girin.');
+                hamVeriTextarea.focus();
+            }
             return;
         }
 
         rolls = parseHamVeri(text);
+        renderTable();
+        triggerAutoSave();
+
+        if (silent) return;
+
         if (rolls.length === 0) {
             showToast('Veri okunamadı. Format: Ürün Kodu - Metre');
             return;
         }
-
         var karmaCount = rolls.filter(function(r) { return r.karma; }).length;
-        renderTable();
-        triggerAutoSave();
         var msg = rolls.length + ' top listelendi';
         if (karmaCount > 0) msg += ' (' + karmaCount + ' karma)';
         showToast(msg + '!');
+    }
+
+    // Analiz Et butonu
+    analizBtn.addEventListener('click', function() { runAnaliz(false); });
+
+    // Canlı analiz: yazdıkça (debounce) tabloyu güncelle
+    var liveTimer = null;
+    hamVeriTextarea.addEventListener('input', function() {
+        clearTimeout(liveTimer);
+        liveTimer = setTimeout(function() { runAnaliz(true); }, 600);
     });
 
     // === TABLO RENDER ===
@@ -198,13 +226,16 @@
             totalMetre.innerHTML = '<strong>0</strong>';
             docTotalMetre.innerHTML = '<strong>0</strong>';
             countBadge.textContent = '0 top';
+            if (docTotalLabel) docTotalLabel.innerHTML = '<strong>TOPLAM</strong>';
+            if (docSummary) docSummary.style.display = 'none';
             return;
         }
 
-        rolls.forEach(function(roll) {
+        rolls.forEach(function(roll, rollIdx) {
             var rollMetre = 0;
             roll.items.forEach(function(item) { rollMetre += item.metre; });
             sumMetre += rollMetre;
+            var rollMetreR = Math.round(rollMetre * 100) / 100;
 
             roll.items.forEach(function(item, idx) {
                 var isFirst = (idx === 0);
@@ -221,26 +252,22 @@
 
                 var noCell = '';
                 if (isFirst) {
-                    var badge = roll.karma ? ' <span class="karma-badge">KARMA</span>' : '';
-                    if (roll.karma) {
-                        noCell = '<td class="col-no" rowspan="' + itemCount + '">' + roll.no + badge + '</td>';
-                    } else {
-                        noCell = '<td class="col-no">' + roll.no + '</td>';
-                    }
+                    var badge = roll.karma
+                        ? ' <span class="karma-badge">KARMA</span><span class="karma-sub">' + rollMetreR + ' mt</span>'
+                        : '';
+                    var rowspanAttr = roll.karma ? ' rowspan="' + itemCount + '"' : '';
+                    noCell = '<td class="col-no"' + rowspanAttr + '>' + roll.no + badge + '</td>';
                 }
 
                 var deleteCell = '';
                 if (isFirst) {
-                    if (roll.karma) {
-                        deleteCell = '<td class="col-action" rowspan="' + itemCount + '"><button class="delete-btn" data-roll="' + (roll.no - 1) + '">&times;</button></td>';
-                    } else {
-                        deleteCell = '<td class="col-action"><button class="delete-btn" data-roll="' + (roll.no - 1) + '">&times;</button></td>';
-                    }
+                    var delRowspan = roll.karma ? ' rowspan="' + itemCount + '"' : '';
+                    deleteCell = '<td class="col-action"' + delRowspan + '><button class="delete-btn" data-roll="' + rollIdx + '">&times;</button></td>';
                 }
 
                 tr.innerHTML = noCell +
                     '<td><strong>' + item.kod + '</strong></td>' +
-                    '<td>' + item.metre + ' mt</td>' +
+                    '<td class="col-metre"><span class="metre-edit" contenteditable="true" data-roll="' + rollIdx + '" data-item="' + idx + '">' + item.metre + '</span> mt</td>' +
                     deleteCell;
                 tbody.appendChild(tr);
 
@@ -254,37 +281,46 @@
 
                 var docNoCell = '';
                 if (isFirst) {
-                    var docBadge = roll.karma ? '<span class="doc-karma-badge">K</span>' : '';
-                    if (roll.karma) {
-                        docNoCell = '<td class="col-no" rowspan="' + itemCount + '">' + roll.no + docBadge + '</td>';
-                    } else {
-                        docNoCell = '<td class="col-no">' + roll.no + '</td>';
-                    }
+                    var docBadge = roll.karma
+                        ? '<span class="doc-karma-badge">K</span><span class="doc-karma-sub">' + rollMetreR + '</span>'
+                        : '';
+                    var docRowspan = roll.karma ? ' rowspan="' + itemCount + '"' : '';
+                    docNoCell = '<td class="col-no"' + docRowspan + '>' + roll.no + docBadge + '</td>';
                 }
 
                 docTr.innerHTML = docNoCell +
                     '<td>' + item.kod + '</td>' +
-                    '<td>' + item.metre + '</td>';
+                    '<td class="col-metre">' + item.metre + '</td>';
                 docTbody.appendChild(docTr);
             });
         });
 
-        totalMetre.innerHTML = '<strong>' + Math.round(sumMetre * 100) / 100 + '</strong>';
-        docTotalMetre.innerHTML = '<strong>' + Math.round(sumMetre * 100) / 100 + '</strong>';
+        var sumMetreR = Math.round(sumMetre * 100) / 100;
+        totalMetre.innerHTML = '<strong>' + sumMetreR + ' mt</strong>';
+        docTotalMetre.innerHTML = '<strong>' + sumMetreR + '</strong>';
         countBadge.textContent = rolls.length + ' top';
 
-        // Ürün özeti (ürün kodu → top sayısı)
-        var kodTopMap = {};
+        // Belge TOPLAM satırına top sayısını yaz
+        if (docTotalLabel) {
+            docTotalLabel.innerHTML = '<strong>TOPLAM (' + rolls.length + ' TOP)</strong>';
+        }
+
+        // Ürün özeti (ürün kodu → top sayısı + toplam metre)
+        var kodMap = {};
+        var kodOrder = [];
         rolls.forEach(function(roll) {
             if (roll.karma) return; // karma toplar tek ürün değil, özete ekleme
             var kod = roll.items[0].kod;
-            kodTopMap[kod] = (kodTopMap[kod] || 0) + 1;
+            if (!kodMap[kod]) { kodMap[kod] = { top: 0, metre: 0 }; kodOrder.push(kod); }
+            kodMap[kod].top += 1;
+            kodMap[kod].metre += roll.items[0].metre;
         });
-        var kodKeys = Object.keys(kodTopMap);
-        if (kodKeys.length > 0) {
+        if (kodOrder.length > 0) {
             docSummary.style.display = 'block';
-            docSummaryItems.innerHTML = kodKeys.map(function(kod) {
-                return '<span class="doc-summary-item">' + kod + ' <span>- ' + kodTopMap[kod] + ' Top</span></span>';
+            docSummaryItems.innerHTML = kodOrder.map(function(kod) {
+                var m = Math.round(kodMap[kod].metre * 100) / 100;
+                return '<div class="doc-summary-item"><span class="dsi-kod">' + kod + '</span>' +
+                       '<span class="dsi-val">' + kodMap[kod].top + ' Top &middot; ' + m + ' mt</span></div>';
             }).join('');
         } else {
             docSummary.style.display = 'none';
@@ -296,8 +332,28 @@
                 var idx = parseInt(this.dataset.roll);
                 rolls.splice(idx, 1);
                 rolls.forEach(function(r, i) { r.no = i + 1; });
+                hamVeriTextarea.value = rollsToText();
                 renderTable();
                 triggerAutoSave();
+            });
+        });
+
+        // Satır içi metre düzenleme
+        tbody.querySelectorAll('.metre-edit').forEach(function(cell) {
+            function commitEdit() {
+                var ri = parseInt(cell.dataset.roll);
+                var ii = parseInt(cell.dataset.item);
+                if (!rolls[ri] || !rolls[ri].items[ii]) return;
+                var val = parseFloat(cell.textContent.trim().replace(',', '.'));
+                if (isNaN(val) || val < 0) val = rolls[ri].items[ii].metre;
+                rolls[ri].items[ii].metre = val;
+                hamVeriTextarea.value = rollsToText();
+                renderTable();
+                triggerAutoSave();
+            }
+            cell.addEventListener('blur', commitEdit);
+            cell.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { e.preventDefault(); cell.blur(); }
             });
         });
     }

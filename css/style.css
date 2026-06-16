@@ -389,6 +389,29 @@ body {
 
 .data-table .col-no { width: 50px; }
 .data-table .col-action { width: 40px; text-align: center; }
+.data-table .col-metre { width: 110px; text-align: right; white-space: nowrap; }
+.data-table th.col-metre, .doc-table th.col-metre { text-align: right; }
+
+/* Satır içi metre düzenleme */
+.metre-edit {
+    display: inline-block;
+    min-width: 32px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px dashed transparent;
+    cursor: text;
+    font-weight: 600;
+    transition: background var(--transition), border-color var(--transition);
+}
+.metre-edit:hover {
+    border-color: var(--color-border);
+    background: #fff;
+}
+.metre-edit:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    background: #fff;
+}
 
 .data-table .delete-btn {
     background: none;
@@ -582,7 +605,10 @@ body {
     font-weight: 700;
 }
 
-.doc-table .col-no { width: 35px; }
+.doc-table .col-no { width: 42px; }
+.doc-table .col-metre { width: 90px; text-align: right; white-space: nowrap; }
+.doc-table th.col-metre { text-align: right; }
+.doc-table .total-row .col-metre { text-align: right; }
 
 /* Notlar (belge içi) */
 .doc-notes {
@@ -597,22 +623,49 @@ body {
 
 /* Ürün Özeti */
 .doc-summary {
-    margin-top: 16px;
-    padding: 10px 20px;
-    border-top: 1px solid #ddd;
+    margin-top: 14px;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fafafa;
+}
+
+.doc-summary::before {
+    content: "ÜRÜN ÖZETİ";
+    display: block;
+    font-size: 8px;
+    font-weight: 800;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+}
+
+#cl-doc-summary-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
 }
 
 .doc-summary-item {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 600;
-    color: #333;
-    margin-right: 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 9px;
+    padding: 3px 8px;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 3px;
+}
+
+.doc-summary-item .dsi-kod {
+    font-weight: 800;
+    color: #000;
     letter-spacing: 0.5px;
 }
 
-.doc-summary-item span {
-    font-weight: 400;
+.doc-summary-item .dsi-val {
+    font-weight: 500;
     color: #666;
 }
 
@@ -952,6 +1005,22 @@ body {
     margin-left: 4px;
     vertical-align: middle;
     letter-spacing: 0.5px;
+}
+
+.karma-sub {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--color-accent);
+    margin-top: 3px;
+}
+
+.doc-karma-sub {
+    display: block;
+    font-size: 7px;
+    font-weight: 700;
+    color: #333;
+    margin-top: 2px;
 }
 
 /* Document karma */

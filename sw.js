@@ -1,5 +1,5 @@
 // ORMEN TEKSTİL - Service Worker v3
-var CACHE_NAME = 'ormen-v9';
+var CACHE_NAME = 'ormen-v10';
 var ASSETS = [
     '/',
     '/index.html',
